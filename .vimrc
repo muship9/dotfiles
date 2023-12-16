@@ -1,6 +1,10 @@
 call plug#begin()
  Plug 'doums/darcula'
- Plug 'fatih/vim-go', { 'do': ':GetUpdateBinaries'}
+ Plug 'prabirshrestha/vim-lsp'
+ Plug 'mattn/vim-lsp-settings'
+ Plug 'prabirshrestha/asyncomplete.vim'
+ Plug 'prabirshrestha/asyncomplete-lsp.vim'
+ Plug 'prabirshrestha/async.vim'
 call plug#end()
 
 colorscheme darcula
@@ -30,7 +34,6 @@ set wrapscan
 set incsearch
 " 検索結果をハイライト表示
 set hlsearch
-
 "----------------------------------------
 " 表示設定
 "----------------------------------------
