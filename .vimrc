@@ -4,6 +4,7 @@ call plug#begin()
  Plug 'mattn/vim-lsp-settings'
  Plug 'prabirshrestha/async.vim'
  Plug 'prabirshrestha/asyncomplete.vim'
+ Plug 'preservim/nerdtree'
  Plug 'prabirshrestha/asyncomplete-lsp.vim'
 call plug#end()
 
@@ -103,6 +104,10 @@ set whichwrap=b,s,h,l,<,>,[,],~
 " バッファスクロール
 set mouse=a
 set termguicolors
+" Ctrl-nでNERDTreeを開く
+nnoremap <D-n-1> :NERDTreeToggle<CR>
+" 隠しファイルを表示する
+let NERDTreeShowHidden = 1
 
 " auto reload .vimrc
 augroup source-vimrc
