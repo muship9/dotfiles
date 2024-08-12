@@ -22,3 +22,7 @@ eval "$(rbenv init -)"
 # vim
 export EDITOR=vim
 eval "$(direnv hook zsh)"
+
+# Go
+export PATH=$GOROOT/bin:$PATH
+
