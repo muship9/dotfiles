@@ -50,7 +50,18 @@ return {
       },
     },
   },
-
+  {
+      "nvim-neo-tree/neo-tree.nvim",
+  opts = {
+    filesystem = {
+      filtered_items = {
+        hide_dotfiles = false,
+        hide_gitignored = false,
+        hide_hidden = false,
+      },
+    },
+  },
+  },
   -- add pyright to lspconfig
   {
     "neovim/nvim-lspconfig",
@@ -64,7 +75,7 @@ return {
     },
   },
 
-  -- add tsserver and setup with typescript.nvim instead of lspconfig
+  -- add tsneo-tree.nvimserver and setup with typescript.nvim instead of lspconfig
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -122,6 +133,8 @@ return {
         "typescript",
         "vim",
         "yaml",
+        "go",
+        "ruby"
       },
     },
   },
