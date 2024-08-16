@@ -62,53 +62,45 @@ return {
     },
   },
   },
-  -- add pyright to lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
-        pyright = {},
-      },
-    },
-  },
 
-  -- add tsneo-tree.nvimserver and setup with typescript.nvim instead of lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "jose-elias-alvarez/typescript.nvim",
-      init = function()
-        require("lazyvim.util").lsp.on_attach(function(_, buffer)
-          -- stylua: ignore
-          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
-          vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
-        end)
+{
+  "neovim/nvim-lspconfig",
+  dependencies = {
+    "jose-elias-alvarez/typescript.nvim", -- TypeScript用の依存関係
+    "ray-x/go.nvim", -- Go用の依存関係
+    init = function()
+      require("lazyvim.util").lsp.on_attach(function(_, buffer)
+        -- TypeScript関連のキーマップ
+        vim.keymap.set("n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
+        vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
+      end)
+    end,
+  },
+  ---@class PluginLspOpts
+  opts = {
+    ---@type lspconfig.options
+    servers = {
+      -- tsserverは自動的にmasonでインストールされ、lspconfigで読み込まれます
+      tsserver = {},
+      gopls = {}, -- goplsサーバーの設定を追加
+    },
+    -- 任意の追加のLSPサーバーの設定をここに行うことができます
+    -- lspconfigでこのサーバーを設定したくない場合はtrueを返す
+    ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
+    setup = {
+      -- typescript.nvimでのセットアップ例
+      tsserver = function(_, opts)
+        require("typescript").setup({ server = opts })
+        return true
+      end,
+      -- goplsのセットアップ
+      gopls = function(_, opts)
+        require("go").setup({ server = opts })
+        return true
       end,
     },
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- tsserver will be automatically installed with mason and loaded with lspconfig
-        tsserver = {},
-      },
-      -- you can do any additional lsp server setup here
-      -- return true if you don't want this server to be setup with lspconfig
-      ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
-      setup = {
-        -- example to setup with typescript.nvim
-        tsserver = function(_, opts)
-          require("typescript").setup({ server = opts })
-          return true
-        end,
-        -- Specify * to use this function as a fallback for any server
-        -- ["*"] = function(server, opts) end,
-      },
-    },
   },
+},
 
   -- for typescript, LazyVim also includes extra specs to properly setup lspconfig,
   -- treesitter, mason and typescript.nvim. So instead of the above, you can use:

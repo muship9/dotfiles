@@ -8,9 +8,6 @@ source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 # starship
 eval "$(starship init zsh)"
 
-# IntelliJ
-alias idea="open -na 'IntelliJ IDEA' --args"
-
 # Volta
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
@@ -24,5 +21,8 @@ export EDITOR=vim
 eval "$(direnv hook zsh)"
 
 # Go
-export PATH=$GOROOT/bin:$PATH
+export PATH=$PATH:$(go env GOPATH)/bin
 
+# alias
+alias nv='nvim .'
+alias idea="open -na 'IntelliJ IDEA' --args"
