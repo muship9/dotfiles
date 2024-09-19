@@ -51,16 +51,17 @@ return {
     },
   },
   {
-      "nvim-neo-tree/neo-tree.nvim",
-  opts = {
-    filesystem = {
-      filtered_items = {
-        hide_dotfiles = false,
-        hide_gitignored = false,
-        hide_hidden = false,
+    "nvim-neo-tree/neo-tree.nvim",
+      opts = {
+        filesystem = {
+          filtered_items = {
+            hide_dotfiles = false,
+            hide_gitignored = false,
+            hide_hidden = false,
+        },
       },
+      ensure_installed = { "go", "gomod", "gowork", "gosum" }
     },
-  },
   },
 
 {
@@ -82,7 +83,40 @@ return {
     servers = {
       -- tsserverは自動的にmasonでインストールされ、lspconfigで読み込まれます
       tsserver = {},
-      gopls = {}, -- goplsサーバーの設定を追加
+      gopls = {
+          gofumpt = true,
+          codelenses = {
+            gc_details = false,
+            generate = true,
+            regenerate_cgo = true,
+            run_govulncheck = true,
+            test = true,
+            tidy = true,
+            upgrade_dependency = true,
+            vendor = true,
+          },
+          hints = {
+            assignVariableTypes = true,
+            compositeLiteralFields = true,
+            compositeLiteralTypes = true,
+            constantValues = true,
+            functionTypeParameters = true,
+            parameterNames = true,
+            rangeVariableTypes = true,
+          },
+          analyses = {
+            fieldalignment = true,
+            nilness = true,
+            unusedparams = true,
+            unusedwrite = true,
+            useany = true,
+          },
+          usePlaceholders = true,
+          completeUnimported = true,
+          staticcheck = true,
+          directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+          semanticTokens = true,
+        },
     },
     -- 任意の追加のLSPサーバーの設定をここに行うことができます
     -- lspconfigでこのサーバーを設定したくない場合はtrueを返す
@@ -95,8 +129,22 @@ return {
       end,
       -- goplsのセットアップ
       gopls = function(_, opts)
-        require("go").setup({ server = opts })
-        return true
+        -- workaround for gopls not supporting semanticTokensProvider
+        -- https://github.com/golang/go/issues/54531#issuecomment-1464982242
+        LazyVim.lsp.on_attach(function(client, _)
+          if not client.server_capabilities.semanticTokensProvider then
+          local semantic = client.config.capabilities.textDocument.semanticTokens
+          client.server_capabilities.semanticTokensProvider = {
+              full = true,
+              legend = {
+                tokenTypes = semantic.tokenTypes,
+                tokenModifiers = semantic.tokenModifiers,
+              },
+              range = true,
+           }
+          end
+        end, "gopls")
+        -- end workaround
       end,
     },
   },
