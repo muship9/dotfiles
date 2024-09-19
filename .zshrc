@@ -26,3 +26,5 @@ export PATH=$PATH:$(go env GOPATH)/bin
 # alias
 alias nv='nvim .'
 alias idea="open -na 'IntelliJ IDEA' --args"
+
+[[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && source "/Users/SHINP09/.gvm/scripts/gvm"

@@ -9,5 +9,7 @@ return {
 
   -- color scheme
   color_scheme = "Kanagawa (Gogh)",
+
+  tab_bar_at_bottom = true,
 }
 
