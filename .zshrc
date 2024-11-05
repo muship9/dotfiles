@@ -27,4 +27,12 @@ export PATH=$PATH:$(go env GOPATH)/bin
 alias nv='nvim .'
 alias idea="open -na 'IntelliJ IDEA' --args"
 
+# ----- git -------
+alias gco='git checkout'
+alias gnb="git checkout -b"
+alias gp="git pull"
+alias ga="git add"
+alias gcm="git commit"
+alias gpsh="git push origin HEAD"
+
 [[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && source "/Users/SHINP09/.gvm/scripts/gvm"
