@@ -16,11 +16,15 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 export PATH="~/.rbenv/shims:/usr/local/bin:$PATH"
 eval "$(rbenv init -)"
 
-# vim
+# nodenv
+export PATH="$HOME/.nodenv/bin:$PATH"
+eval "$(nodenv init -)"
+
+# VIM
 export EDITOR=vim
 eval "$(direnv hook zsh)"
 
-# Go
+# go
 export PATH=$PATH:$(go env GOPATH)/bin
 
 # alias
