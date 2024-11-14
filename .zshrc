@@ -36,3 +36,23 @@ alias gcm="git commit"
 alias gpsh="git push origin HEAD"
 
 [[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && source "/Users/SHINP09/.gvm/scripts/gvm"
+export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
+
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+
+gate() {
+  local instance
+  instance="$(aws-gate list | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
+  if [ "${instance}" = "" ]; then
+    return 1
+  fi
+  aws-gate session ${instance}
+}
+gate-dev() {
+  instance=$(aws-gate list --profile dev | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')
+  if [[ -z "$instance" ]]; then
+    return 1
+  fi
+  aws-gate session $instance --profile dev
+}
