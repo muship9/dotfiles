@@ -16,7 +16,6 @@ return {
       table.insert(opts.sources, { name = "emoji" })
     end,
   },
-
   -- change some telescope options and a keymap to browse plugin files
   {
     "nvim-telescope/telescope.nvim",
@@ -170,7 +169,6 @@ return {
       table.insert(opts.sections.lualine_x, "😄")
     end,
   },
-
   -- use mini.starter instead of alpha
   { import = "lazyvim.plugins.extras.ui.mini-starter" },
 
