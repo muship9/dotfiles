@@ -1,3 +1,6 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
+---- 相対パスをクリップボードにコピー
+vim.keymap.set("n", "<leader>cp", function()
+  local rel_path = vim.fn.expand("%:.")
+  vim.fn.setreg("+", rel_path)
+  vim.notify("Copy FilePath: " .. rel_path)
+end, { desc = "Copy FilePath" })
