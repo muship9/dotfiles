@@ -31,32 +31,48 @@ export PATH=$PATH:$(go env GOPATH)/bin
 alias nv='nvim .'
 alias idea="open -na 'IntelliJ IDEA' --args"
 
-# ----- git -------
-alias gco='git checkout'
-alias gnb="git checkout -b"
-alias gp="git pull"
-alias ga="git add"
-alias gcm="git commit"
-alias gpsh="git push origin HEAD"
-
 [[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && source "/Users/SHINP09/.gvm/scripts/gvm"
 export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
 
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
-gate() {
-  local instance
-  instance="$(aws-gate list | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
-  if [ "${instance}" = "" ]; then
-    return 1
-  fi
-  aws-gate session ${instance}
+# AWS 作業用サーバへログイン
+alias sb='select-bastion'
+
+select-bastion() {
+  select ENV in "prod" "dev"; do
+    case "$ENV" in
+      prod)
+        instance="$(aws-gate list | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
+        if [ -z "${instance}" ]; then
+          return 1
+        fi
+        aws-gate session "${instance}"
+        break
+        ;;
+      dev)
+        instance="$(aws-gate list --profile dev | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
+        if [ -z "${instance}" ]; then
+          return 1
+        fi
+        aws-gate session "${instance}" --profile dev
+        break
+        ;;
+      *)
+        echo "無効な選択肢です"
+        return 1
+        ;;
+    esac
+  done
 }
-gate-dev() {
-  instance=$(aws-gate list --profile dev | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')
-  if [[ -z "$instance" ]]; then
-    return 1
-  fi
-  aws-gate session $instance --profile dev
-}
+
+# bun completions
+[ -s "/Users/mukaiyamashinpei/.bun/_bun" ] && source "/Users/mukaiyamashinpei/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+# Added by Windsurf
+export PATH="/Users/mukaiyamashinpei/.codeium/windsurf/bin:$PATH"
