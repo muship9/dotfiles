@@ -60,3 +60,7 @@ gate-dev() {
   fi
   aws-gate session $instance --profile dev
 }
+
+# Added by Windsurf
+export PATH="/Users/SHINP09/.codeium/windsurf/bin:$PATH"
+export PATH="/opt/homebrew/opt/protobuf@21/bin:$PATH"
