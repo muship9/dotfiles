@@ -95,9 +95,13 @@ return {
           },
         },
         gopls = {
-          gofumpt = true,
-          analyses = { fieldalignment = true, nilness = true },
-          staticcheck = true,
+          settings = {
+            gopls = {
+              gofumpt = true,
+              analyses = { fieldalignment = true, nilness = true },
+              staticcheck = true,
+            },
+          },
         },
         rust_analyzer = {
           settings = {
