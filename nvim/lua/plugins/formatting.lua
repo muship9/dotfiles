@@ -1,11 +1,3 @@
--- 保存時に自動フォーマットを実行するためのautocmd
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = { "*.js", "*.jsx", "*.ts", "*.tsx", "*.json" },
-  callback = function()
-    vim.lsp.buf.format()
-  end,
-})
-
 return {
   -- null-lsを使ってPrettierを設定
   {

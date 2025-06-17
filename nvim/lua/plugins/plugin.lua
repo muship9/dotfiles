@@ -67,6 +67,10 @@ return {
         require("lazyvim.util").lsp.on_attach(function(_, buffer)
           vim.keymap.set("n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
           vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
+          -- フォーマットのキーマップにタイムアウトを設定
+          vim.keymap.set("n", "<leader>cf", function()
+            vim.lsp.buf.format({ timeout_ms = 2000 })
+          end, { buffer = buffer, desc = "Format with timeout" })
         end)
       end,
     },
@@ -133,9 +137,15 @@ return {
         lua = { "stylua" },
         rust = { "rustfmt" },
         go = { "gofumpt" },
+        javascript = { "prettier" },
+        javascriptreact = { "prettier" },
+        typescript = { "prettier" },
+        typescriptreact = { "prettier" },
+        json = { "prettier" },
       },
       format_on_save = {
-        timeout_ms = 500,
+        -- タイムアウトを2秒に増加
+        timeout_ms = 2000,
         lsp_fallback = true,
       },
     },
