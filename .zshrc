@@ -37,36 +37,6 @@ export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
 # Set up fzf key bindings and fuzzy completion
 source <(fzf --zsh)
 
-# AWS 作業用サーバへログイン
-alias sb='select-bastion'
-
-select-bastion() {
-  select ENV in "prod" "dev"; do
-    case "$ENV" in
-      prod)
-        instance="$(aws-gate list | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
-        if [ -z "${instance}" ]; then
-          return 1
-        fi
-        aws-gate session "${instance}"
-        break
-        ;;
-      dev)
-        instance="$(aws-gate list --profile dev | cut -f 1,2 -d ' ' | fzf --reverse --ansi | cut -f 1 -d ' ')"
-        if [ -z "${instance}" ]; then
-          return 1
-        fi
-        aws-gate session "${instance}" --profile dev
-        break
-        ;;
-      *)
-        echo "無効な選択肢です"
-        return 1
-        ;;
-    esac
-  done
-}
-
 # bun completions
 [ -s "/Users/mukaiyamashinpei/.bun/_bun" ] && source "/Users/mukaiyamashinpei/.bun/_bun"
 
@@ -77,7 +47,6 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 # Added by Windsurf
 export PATH="/Users/mukaiyamashinpei/.codeium/windsurf/bin:$PATH"
 
-
 function select-history() {
   BUFFER=$(history -n -r 1 | fzf --no-sort +m --query "$LBUFFER" --prompt="History > ")
   CURSOR=$#BUFFER
@@ -86,3 +55,4 @@ function select-history() {
 zle -N select-history
 bindkey '^r' select-history
 
+[[ -s "./work.zsh" ]] && source "./work.zsh"

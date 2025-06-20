@@ -1,5 +1,13 @@
 .zprofile
 .zsh_history
+.zsh_sessions/
+work.zsh
 
-/.idea
-/.zsh_sessions
+.idea/
+.envrc
+.env.development
+
+env
+change-env.sh
+
+oxford.dump*
