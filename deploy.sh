@@ -1,5 +1,5 @@
 # 配置したい設定ファイル
-dotfiles=(~/dotfiles/.zshrc ~/dotfiles/starship/starship.toml ~/dotfiles/wezterm/ ~/dotfiles/nvim/ ~/dotfiles/ignore)
+dotfiles=(~/dotfiles/.zshrc ~/dotfiles/starship/starship.toml ~/dotfiles/wezterm/ ~/dotfiles/nvim/ ~/dotfiles/.gitignore)
 
 # .zshrc のシンボリックリンクをホームディレクトリ直下に作成する
 for file in "${dotfiles[@]}"; do
