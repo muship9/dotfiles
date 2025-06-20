@@ -55,4 +55,4 @@ function select-history() {
 zle -N select-history
 bindkey '^r' select-history
 
-[[ -s "./work.zsh" ]] && source "./work.zsh"
+[[ -s "/Users/mukaiyamashinpei/dotfiles/work.zsh" ]] && source "/Users/mukaiyamashinpei/dotfiles/work.zsh"
