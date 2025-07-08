@@ -6,6 +6,7 @@ work.zsh
 .idea/
 .envrc
 .env.development
+.env
 
 env
 change-env.sh

@@ -27,6 +27,11 @@ eval "$(direnv hook zsh)"
 # go
 export PATH=$PATH:$(go env GOPATH)/bin
 
+# Load .env file if it exists
+if [ -f "$HOME/dotfiles/.env" ]; then
+  export $(grep -v '^#' $HOME/dotfiles/.env | xargs)
+fi
+
 # alias
 alias nv='nvim .'
 alias idea="open -na 'IntelliJ IDEA' --args"
