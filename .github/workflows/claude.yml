@@ -1,0 +1,22 @@
+name: Claude PR Creation
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+jobs:
+  claude-pr:
+    if: contains(github.event.comment.body, '@claude') || contains(github.event.issue.body, '@claude')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_tools: "mcp__github__create_pull_request,Bash(git:*),View,GlobTool,GrepTool,Write"
