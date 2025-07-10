@@ -46,7 +46,11 @@ fi
 alias nv='nvim .'
 alias idea="open -na 'IntelliJ IDEA' --args"
 
-[[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && source "/Users/SHINP09/.gvm/scripts/gvm"
+# GVM - Go Version Manager
+if [[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && [[ -z "$GVM_INIT" ]]; then
+  export GVM_INIT=1
+  source "/Users/SHINP09/.gvm/scripts/gvm"
+fi
 export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
 
 # Set up fzf key bindings and fuzzy completion
