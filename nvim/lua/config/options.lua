@@ -1,11 +1,53 @@
--- Options are automatically loaded before lazy.nvim startup
--- Default options that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/options.lua
--- Add any additional options here
+-- Basic options
 local opt = vim.opt
-local g = vim.g
 
-opt.relativenumber = false -- 絶対行番号を使用
-opt.hidden = true -- 非表示のバッファに切り替えを許可
+-- Line numbers
+opt.number = true
+opt.relativenumber = true
 
-g.nvim_tree_hide_dotfiles = 0 -- nvim-treeでドットファイルを表示
+-- Tabs and indentation
+opt.tabstop = 2
+opt.shiftwidth = 2
+opt.expandtab = true
+opt.autoindent = true
+opt.smartindent = true
 
+-- Search
+opt.ignorecase = true
+opt.smartcase = true
+opt.hlsearch = true
+opt.incsearch = true
+
+-- Appearance
+opt.termguicolors = true
+opt.signcolumn = "yes"
+opt.cursorline = true
+opt.wrap = false
+opt.scrolloff = 8
+opt.sidescrolloff = 8
+
+-- Behavior
+opt.mouse = "a"
+opt.clipboard = "unnamedplus"
+opt.splitbelow = true
+opt.splitright = true
+opt.swapfile = false
+opt.backup = false
+opt.undofile = true
+opt.undodir = vim.fn.stdpath("data") .. "/undo"
+
+-- Performance
+opt.updatetime = 250
+opt.timeoutlen = 300
+opt.lazyredraw = false
+
+-- Completion
+opt.completeopt = "menu,menuone,noselect"
+
+-- Command line settings
+opt.cmdheight = 1  -- Standard command line height
+opt.laststatus = 3  -- Global statusline
+
+-- Set leader key
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
