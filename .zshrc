@@ -21,15 +21,25 @@ export PATH="$HOME/.nodenv/bin:$PATH"
 eval "$(nodenv init -)"
 
 # VIM
-export EDITOR=vim
+export EDITOR=nvim
 eval "$(direnv hook zsh)"
 
+# Neovim server for nvr
+export NVIM_LISTEN_ADDRESS=/tmp/nvim.pipe
+
+# Python user bin (for nvr)
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+
 # go
-export PATH=$PATH:$(go env GOPATH)/bin
+if command -v go &> /dev/null; then
+  export PATH=$PATH:$(go env GOPATH)/bin
+fi
 
 # Load .env file if it exists
 if [ -f "$HOME/dotfiles/.env" ]; then
-  export $(grep -v '^#' $HOME/dotfiles/.env | xargs)
+  set -a
+  source "$HOME/dotfiles/.env"
+  set +a
 fi
 
 # alias

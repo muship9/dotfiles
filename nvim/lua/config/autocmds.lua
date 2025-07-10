@@ -99,3 +99,14 @@ vim.api.nvim_create_autocmd("VimEnter", {
     end
   end,
 })
+
+-- Start Neovim server for nvr
+vim.api.nvim_create_autocmd("VimEnter", {
+  group = augroup("nvim_server"),
+  callback = function()
+    local server_address = vim.env.NVIM_LISTEN_ADDRESS or "/tmp/nvim.pipe"
+    if vim.fn.filereadable(server_address) == 0 then
+      vim.fn.serverstart(server_address)
+    end
+  end,
+})
