@@ -7,6 +7,12 @@ keymap("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
 keymap("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
 keymap("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 
+-- Alternative window navigation (in case <C-l> conflicts)
+keymap("n", "<leader>wh", "<C-w>h", { desc = "Go to left window" })
+keymap("n", "<leader>wj", "<C-w>j", { desc = "Go to lower window" })
+keymap("n", "<leader>wk", "<C-w>k", { desc = "Go to upper window" })
+keymap("n", "<leader>wr", "<C-w>l", { desc = "Go to right window" })
+
 -- Resize window using <ctrl> arrow keys
 keymap("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })
 keymap("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease window height" })
@@ -39,8 +45,8 @@ keymap("n", "<leader>qa", "<cmd>qa<cr>", { desc = "Quit all" })
 -- Windows
 keymap("n", "<leader>ww", "<C-W>p", { desc = "Other window" })
 keymap("n", "<leader>wd", "<C-W>c", { desc = "Delete window" })
-keymap("n", "<leader>w-", "<C-W>s", { desc = "Split window below" })
-keymap("n", "<leader>w|", "<C-W>v", { desc = "Split window right" })
+keymap("n", "<leader>wb", "<C-W>s", { desc = "Split window below (horizontal)" })
+keymap("n", "<leader>wl", "<C-W>v", { desc = "Split window right (vertical)" })
 
 -- Buffers
 keymap("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
