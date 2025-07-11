@@ -48,8 +48,39 @@ return {
 	-- Mason (LSP installer) - バイナリインストールのみ
 	{
 		"williamboman/mason.nvim",
+		build = ":MasonUpdate",
+		cmd = { "Mason", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog" },
 		config = function()
-			require("mason").setup()
+			require("mason").setup({
+				ui = {
+					icons = {
+						package_installed = "✓",
+						package_pending = "➜",
+						package_uninstalled = "✗",
+					},
+				},
+			})
+		end,
+	},
+
+	-- Mason-lspconfig bridge
+	{
+		"williamboman/mason-lspconfig.nvim",
+		dependencies = {
+			"williamboman/mason.nvim",
+			"neovim/nvim-lspconfig",
+		},
+		config = function()
+			require("mason-lspconfig").setup({
+				ensure_installed = {
+					"ts_ls",
+					"gopls",
+					"rust_analyzer",
+					"pyright",
+					"lua_ls",
+				},
+				automatic_installation = true,
+			})
 		end,
 	},
 
@@ -60,6 +91,7 @@ return {
 		config = function()
 			-- 既存の設定をそのまま維持...
 			local lspconfig = require("lspconfig")
+			local util = require("lspconfig.util")
 
 			-- Setup capabilities for nvim-cmp
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
@@ -67,19 +99,80 @@ return {
 			if has_cmp then
 				capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
 			end
+
+			-- プロジェクトルートを検出するヘルパー関数
+			local function get_project_root(pattern)
+				return function(fname)
+					return util.root_pattern(pattern)(fname) or util.find_git_ancestor(fname) or vim.fn.getcwd()
+				end
+			end
+
+			-- TypeScript/JavaScript
+			lspconfig.ts_ls.setup({
+				capabilities = capabilities,
+				root_dir = get_project_root({ "package.json", "tsconfig.json", "jsconfig.json", ".git" }),
+				single_file_support = true,
+				filetypes = {
+					"javascript",
+					"javascriptreact",
+					"javascript.jsx",
+					"typescript",
+					"typescriptreact",
+					"typescript.tsx",
+				},
+			})
+
 			-- Go
 			lspconfig.gopls.setup({
 				capabilities = capabilities,
+				root_dir = get_project_root({ "go.mod", ".git" }),
+				settings = {
+					gopls = {
+						analyses = {
+							unusedparams = true,
+						},
+						staticcheck = true,
+						gofumpt = true,
+					},
+				},
 			})
 
 			-- Rust
 			lspconfig.rust_analyzer.setup({
 				capabilities = capabilities,
+				root_dir = get_project_root({ "Cargo.toml", ".git" }),
+				settings = {
+					["rust-analyzer"] = {
+						cargo = {
+							allFeatures = true,
+							loadOutDirsFromCheck = true,
+						},
+						procMacro = {
+							enable = true,
+						},
+					},
+				},
+			})
+
+			-- Python
+			lspconfig.pyright.setup({
+				capabilities = capabilities,
+				root_dir = get_project_root({ "setup.py", "setup.cfg", "pyproject.toml", "requirements.txt", ".git" }),
 			})
 
 			-- Lua
 			lspconfig.lua_ls.setup({
 				capabilities = capabilities,
+				root_dir = get_project_root({
+					".luarc.json",
+					".luarc.jsonc",
+					".luacheckrc",
+					".stylua.toml",
+					"stylua.toml",
+					"selene.toml",
+					"selene.yml",
+					".git",
+				}),
 				settings = {
 					Lua = {
 						runtime = {
@@ -108,18 +201,37 @@ return {
 					local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
 					-- LSP attached silently
-					vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-					vim.keymap.set("n", "gi", vim.lsp.buf.implementation, opts)
+					-- FzfLuaを使用したLSPキーマップ
+					vim.keymap.set(
+						"n",
+						"gd",
+						"<cmd>FzfLua lsp_definitions jump_to_single_result=true ignore_current_line=true<cr>",
+						opts
+					)
+					vim.keymap.set(
+						"n",
+						"gr",
+						"<cmd>FzfLua lsp_references jump_to_single_result=true ignore_current_line=true<cr>",
+						opts
+					)
+					vim.keymap.set(
+						"n",
+						"gi",
+						"<cmd>FzfLua lsp_implementations jump_to_single_result=true ignore_current_line=true<cr>",
+						opts
+					)
+					vim.keymap.set(
+						"n",
+						"gy",
+						"<cmd>FzfLua lsp_typedefs jump_to_single_result=true ignore_current_line=true<cr>",
+						opts
+					)
+
+					-- 通常のLSPキーマップ
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-					vim.keymap.set("n", "gi", function()
-						require("telescope.builtin").lsp_implementations()
-					end, opts)
 					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
 					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 					vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
-					vim.keymap.set("n", "gr", function()
-						require("telescope.builtin").lsp_references()
-					end, opts)
 
 					-- Additional useful mappings with telescope
 					vim.keymap.set("n", "<leader>ds", function()
@@ -143,7 +255,6 @@ return {
 			-- Show line diagnostics automatically in hover window
 			vim.o.updatetime = 250
 			vim.api.nvim_create_autocmd("CursorHold", {
-				buffer = bufnr,
 				callback = function()
 					local opts = {
 						focusable = false,
@@ -191,34 +302,111 @@ return {
 				local ft = vim.bo[buf].filetype
 				print("Attempting to start LSP for filetype: " .. ft)
 
+				-- 汎用的なLSPコマンド検索関数
+				local function find_cmd(server_name, alternatives)
+					-- Mason から探す
+					local mason_path = vim.fn.stdpath("data") .. "/mason/bin/" .. server_name
+					if vim.fn.executable(mason_path) == 1 then
+						return { mason_path }
+					end
+
+					-- 代替パスから探す
+					if alternatives then
+						for _, alt in ipairs(alternatives) do
+							if vim.fn.executable(alt) == 1 then
+								return { alt }
+							end
+						end
+					end
+
+					-- システムパスから探す
+					if vim.fn.executable(server_name) == 1 then
+						return { server_name }
+					end
+
+					return nil
+				end
+
 				if ft == "typescript" or ft == "javascript" or ft == "typescriptreact" or ft == "javascriptreact" then
-					vim.lsp.start({
-						name = "ts_ls",
-						cmd = {
-							"/Users/SHINP09/.volta/tools/image/node/20.14.0/bin/typescript-language-server",
-							"--stdio",
-						},
-						root_dir = vim.fn.getcwd(),
-						single_file_support = true,
+					local cmd = find_cmd("typescript-language-server", {
+						"tsserver",
+						vim.fn.expand("~/.volta/bin/typescript-language-server"),
+						vim.fn.expand("~/.nvm/versions/node/*/bin/typescript-language-server"),
 					})
+					if cmd then
+						table.insert(cmd, "--stdio")
+						vim.lsp.start({
+							name = "ts_ls",
+							cmd = cmd,
+							root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(
+								vim.fn.expand("%:p:h")
+							) or vim.fn.getcwd(),
+							single_file_support = true,
+						})
+					else
+						print("TypeScript language server not found. Please install it via Mason or npm.")
+					end
 				elseif ft == "go" then
-					vim.lsp.start({
-						name = "gopls",
-						cmd = { "/Users/SHINP09/.local/share/nvim/mason/bin/gopls" },
-						root_dir = vim.fn.getcwd(),
-					})
+					local cmd = find_cmd("gopls")
+					if cmd then
+						vim.lsp.start({
+							name = "gopls",
+							cmd = cmd,
+							root_dir = util.root_pattern("go.mod", ".git")(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+						})
+					else
+						print("gopls not found. Please install it via Mason or go install.")
+					end
 				elseif ft == "rust" then
-					vim.lsp.start({
-						name = "rust_analyzer",
-						cmd = { "/Users/SHINP09/.local/share/nvim/mason/bin/rust-analyzer" },
-						root_dir = vim.fn.getcwd(),
-					})
+					local cmd = find_cmd("rust-analyzer")
+					if cmd then
+						vim.lsp.start({
+							name = "rust_analyzer",
+							cmd = cmd,
+							root_dir = util.root_pattern("Cargo.toml", ".git")(vim.fn.expand("%:p:h"))
+								or vim.fn.getcwd(),
+						})
+					else
+						print("rust-analyzer not found. Please install it via Mason or rustup.")
+					end
+				elseif ft == "python" then
+					local cmd = find_cmd("pyright-langserver", { "pyright" })
+					if cmd then
+						table.insert(cmd, "--stdio")
+						vim.lsp.start({
+							name = "pyright",
+							cmd = cmd,
+							root_dir = util.root_pattern(
+								"setup.py",
+								"setup.cfg",
+								"pyproject.toml",
+								"requirements.txt",
+								".git"
+							)(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+						})
+					else
+						print("pyright not found. Please install it via Mason or npm.")
+					end
 				elseif ft == "lua" then
-					vim.lsp.start({
-						name = "lua_ls",
-						cmd = { "/Users/SHINP09/.local/share/nvim/mason/bin/lua-language-server" },
-						root_dir = vim.fn.getcwd(),
-					})
+					local cmd = find_cmd("lua-language-server")
+					if cmd then
+						vim.lsp.start({
+							name = "lua_ls",
+							cmd = cmd,
+							root_dir = util.root_pattern(
+								".luarc.json",
+								".luarc.jsonc",
+								".luacheckrc",
+								".stylua.toml",
+								"stylua.toml",
+								"selene.toml",
+								"selene.yml",
+								".git"
+							)(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+						})
+					else
+						print("lua-language-server not found. Please install it via Mason.")
+					end
 				else
 					print("No LSP configured for filetype: " .. ft)
 				end
@@ -329,6 +517,15 @@ return {
 					},
 				},
 			})
+		end,
+	},
+
+	-- FzfLua for better fuzzy finding
+	{
+		"ibhagwan/fzf-lua",
+		dependencies = { "nvim-tree/nvim-web-devicons" },
+		config = function()
+			require("fzf-lua").setup({})
 		end,
 	},
 
@@ -487,21 +684,6 @@ return {
 		end,
 	},
 
-	-- Claude integration (optional)
-	{
-		"greggh/claude-code.nvim",
-		cmd = "ClaudeCode",
-		keys = {
-			{ "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Open Claude Code" },
-		},
-		config = function()
-			require("claude-code").setup({
-				split_direction = "vertical",
-				split_size = 0.3,
-			})
-		end,
-	},
-
 	-- Lazygit integration
 	{
 		"kdheepak/lazygit.nvim",
@@ -550,6 +732,29 @@ return {
 			local cmp_autopairs = require("nvim-autopairs.completion.cmp")
 			local cmp = require("cmp")
 			cmp.event:on("confirm_done", cmp_autopairs.on_confirm_done())
+		end,
+	},
+	-- Claude integration (optional)
+	{
+		"greggh/claude-code.nvim",
+		cmd = "ClaudeCode",
+		keys = {
+			{ "<leader>cd", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
+		},
+		config = function()
+			require("claude-code").setup({
+				window = {
+					position = "float",
+					float = {
+						width = "90%", -- Take up 90% of the editor width
+						height = "90%", -- Take up 90% of the editor height
+						row = "center", -- Center vertically
+						col = "center", -- Center horizontally
+						relative = "editor",
+						border = "double", -- Use double border style
+					},
+				},
+			})
 		end,
 	},
 }

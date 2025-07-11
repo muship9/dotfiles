@@ -24,8 +24,8 @@ eval "$(nodenv init -)"
 export EDITOR=nvim
 eval "$(direnv hook zsh)"
 
-# Neovim server for nvr
-export NVIM_LISTEN_ADDRESS=/tmp/nvim.pipe
+# Neovim server for nvr (commented out - nvr not installed)
+# export NVIM_LISTEN_ADDRESS=/tmp/nvim.pipe
 
 # Python user bin (for nvr)
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
