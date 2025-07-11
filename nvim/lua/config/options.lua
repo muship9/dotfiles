@@ -45,8 +45,11 @@ opt.lazyredraw = false
 opt.completeopt = "menu,menuone,noselect"
 
 -- Command line settings
-opt.cmdheight = 1  -- Standard command line height
+opt.cmdheight = 0  -- Hide command line when not in use
 opt.laststatus = 3  -- Global statusline
+opt.showmode = false  -- Don't show mode since we have statusline
+opt.showcmd = false  -- Don't show command in status line
+opt.ruler = false  -- Don't show cursor position in command line
 
 -- Set leader key
 vim.g.mapleader = " "
