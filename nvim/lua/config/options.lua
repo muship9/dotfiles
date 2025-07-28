@@ -57,3 +57,15 @@ vim.g.maplocalleader = " "
 
 -- Suppress deprecation warnings from plugins
 vim.deprecate = function() end
+
+-- Set up Neovim server for neovim-remote (nvr)
+-- This ensures that v:servername is set properly
+if vim.fn.has("nvim") == 1 then
+  -- Set servername if not already set
+  if vim.v.servername == "" then
+    -- Use a unique servername based on PID
+    vim.v.servername = "/tmp/nvim-" .. vim.fn.getpid() .. ".sock"
+  end
+  -- Export NVIM environment variable for child processes
+  vim.env.NVIM = vim.v.servername
+end

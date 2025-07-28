@@ -24,11 +24,22 @@ eval "$(nodenv init -)"
 export EDITOR=nvim
 eval "$(direnv hook zsh)"
 
-# Neovim server for nvr (commented out - nvr not installed)
-# export NVIM_LISTEN_ADDRESS=/tmp/nvim.pipe
-
 # Python user bin (for nvr)
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+
+# Neovim Remote (nvr) configuration
+# Use nvr when inside neovim terminal
+if [ -n "$NVIM" ]; then
+    alias nvim="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+    alias vim="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+    export VISUAL="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+    export EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+    export GIT_EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
+else
+    export VISUAL="nvim"
+    export EDITOR="nvim"
+    export GIT_EDITOR="nvim"
+fi
 
 # go
 if command -v go &> /dev/null; then
