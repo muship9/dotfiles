@@ -1,82 +1,103 @@
-# HomeBrew
+# ================================================================
+# Zsh Configuration
+# ================================================================
+
+# ----------------------------------------------------------------
+# System Paths
+# ----------------------------------------------------------------
+# Homebrew paths
 export PATH="/usr/local/bin:/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
 
-# Zsh Plugin
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# Python user bin (for neovim-remote)
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
-# starship
-eval "$(starship init zsh)"
+# MySQL client
+export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
 
-# Volta
+# ----------------------------------------------------------------
+# Programming Language Managers
+# ----------------------------------------------------------------
+# Volta (Node.js version manager)
 export VOLTA_HOME="$HOME/.volta"
 export PATH="$VOLTA_HOME/bin:$PATH"
 
-# rbenv
-export PATH="~/.rbenv/shims:/usr/local/bin:$PATH"
-eval "$(rbenv init -)"
+# rbenv (Ruby version manager)
+if command -v rbenv &> /dev/null; then
+  export PATH="~/.rbenv/shims:/usr/local/bin:$PATH"
+  eval "$(rbenv init -)"
+fi
 
-# nodenv
-export PATH="$HOME/.nodenv/bin:$PATH"
-eval "$(nodenv init -)"
+# nodenv (Node.js version manager - alternative to Volta)
+if command -v nodenv &> /dev/null; then
+  export PATH="$HOME/.nodenv/bin:$PATH"
+  eval "$(nodenv init -)"
+fi
 
-# VIM
-export EDITOR=nvim
-eval "$(direnv hook zsh)"
+# Go
+if command -v go &> /dev/null; then
+  export PATH="$PATH:$(go env GOPATH)/bin"
+fi
 
-# Python user bin (for nvr)
-export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+# GVM (Go Version Manager)
+if [[ -s "$HOME/.gvm/scripts/gvm" ]] && [[ -z "$GVM_INIT" ]]; then
+  export GVM_INIT=1
+  source "$HOME/.gvm/scripts/gvm"
+fi
 
-# Neovim Remote (nvr) configuration
-# Use nvr when inside neovim terminal
-if [ -n "$NVIM" ]; then
+# Bun (JavaScript runtime and package manager)
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+[[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
+
+# ----------------------------------------------------------------
+# Editor Configuration
+# ----------------------------------------------------------------
+# Default editor setup with neovim-remote support
+if [[ -n "$NVIM" ]]; then
+    # Inside Neovim terminal - use neovim-remote
     alias nvim="nvr -cc split --remote-wait +'set bufhidden=wipe'"
     alias vim="nvr -cc split --remote-wait +'set bufhidden=wipe'"
     export VISUAL="nvr -cc split --remote-wait +'set bufhidden=wipe'"
     export EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
     export GIT_EDITOR="nvr -cc split --remote-wait +'set bufhidden=wipe'"
 else
+    # Normal shell - use neovim directly
     export VISUAL="nvim"
     export EDITOR="nvim"
     export GIT_EDITOR="nvim"
 fi
 
-# go
-if command -v go &> /dev/null; then
-  export PATH=$PATH:$(go env GOPATH)/bin
+# ----------------------------------------------------------------
+# Shell Enhancements
+# ----------------------------------------------------------------
+# Zsh plugins (installed via Homebrew)
+if [[ -f "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+  source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
 fi
 
-# Load .env file if it exists
-if [ -f "$HOME/dotfiles/.env" ]; then
-  set -a
-  source "$HOME/dotfiles/.env"
-  set +a
+if [[ -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
+  source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
 
-# alias
-alias nv='nvim .'
-alias idea="open -na 'IntelliJ IDEA' --args"
-
-# GVM - Go Version Manager
-if [[ -s "/Users/SHINP09/.gvm/scripts/gvm" ]] && [[ -z "$GVM_INIT" ]]; then
-  export GVM_INIT=1
-  source "/Users/SHINP09/.gvm/scripts/gvm"
+# Starship prompt
+if command -v starship &> /dev/null; then
+  eval "$(starship init zsh)"
 fi
-export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
 
-# Set up fzf key bindings and fuzzy completion
-source <(fzf --zsh)
+# fzf key bindings and completion
+if command -v fzf &> /dev/null; then
+  source <(fzf --zsh)
+fi
 
-# bun completions
-[ -s "/Users/mukaiyamashinpei/.bun/_bun" ] && source "/Users/mukaiyamashinpei/.bun/_bun"
+# direnv for directory-specific environment variables
+if command -v direnv &> /dev/null; then
+  eval "$(direnv hook zsh)"
+fi
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
-# Added by Windsurf
-export PATH="/Users/mukaiyamashinpei/.codeium/windsurf/bin:$PATH"
-
+# ----------------------------------------------------------------
+# Custom Functions
+# ----------------------------------------------------------------
+# Enhanced history search with fzf
 function select-history() {
   BUFFER=$(history -n -r 1 | fzf --no-sort +m --query "$LBUFFER" --prompt="History > ")
   CURSOR=$#BUFFER
@@ -85,4 +106,27 @@ function select-history() {
 zle -N select-history
 bindkey '^r' select-history
 
+# ----------------------------------------------------------------
+# Aliases
+# ----------------------------------------------------------------
+alias nv='nvim .'
+alias idea="open -na 'IntelliJ IDEA' --args"
+
+# ----------------------------------------------------------------
+# External Tools
+# ----------------------------------------------------------------
+# Windsurf (Codeium)
+export PATH="/Users/mukaiyamashinpei/.codeium/windsurf/bin:$PATH"
+
+# ----------------------------------------------------------------
+# Environment Files
+# ----------------------------------------------------------------
+# Load dotfiles environment variables
+if [[ -f "$HOME/dotfiles/.env" ]]; then
+  set -a
+  source "$HOME/dotfiles/.env"
+  set +a
+fi
+
+# Load work-specific configuration
 [[ -s "/Users/mukaiyamashinpei/dotfiles/work.zsh" ]] && source "/Users/mukaiyamashinpei/dotfiles/work.zsh"
