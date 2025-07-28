@@ -33,6 +33,7 @@ return {
 					"rust_analyzer",
 					"pyright",
 					"lua_ls",
+					"marksman", -- Markdown LSP
 				},
 				automatic_installation = true,
 			})
@@ -145,6 +146,13 @@ return {
 						},
 					},
 				},
+			})
+
+			-- Markdown
+			lspconfig.marksman.setup({
+				capabilities = capabilities,
+				root_dir = get_project_root({ ".git", ".marksman.toml" }),
+				filetypes = { "markdown", "markdown.mdx" },
 			})
 
 			-- Keymaps
@@ -361,6 +369,17 @@ return {
 						})
 					else
 						print("lua-language-server not found. Please install it via Mason.")
+					end
+				elseif ft == "markdown" then
+					local cmd = find_cmd("marksman")
+					if cmd then
+						vim.lsp.start({
+							name = "marksman",
+							cmd = cmd,
+							root_dir = util.root_pattern(".git", ".marksman.toml")(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+						})
+					else
+						print("marksman not found. Please install it via Mason.")
 					end
 				else
 					print("No LSP configured for filetype: " .. ft)
