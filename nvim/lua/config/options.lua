@@ -54,3 +54,6 @@ opt.ruler = false  -- Don't show cursor position in command line
 -- Set leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
+-- Suppress deprecation warnings from plugins
+vim.deprecate = function() end
