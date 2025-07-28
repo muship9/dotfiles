@@ -57,28 +57,25 @@ keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 keymap("n", "<leader>bd", function()
   local current_buf = vim.api.nvim_get_current_buf()
-  local all_bufs = vim.api.nvim_list_bufs()
   
-  -- Find next valid buffer to switch to
-  local next_buf = nil
-  for _, buf in ipairs(all_bufs) do
-    if buf ~= current_buf and vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
-      local bufname = vim.api.nvim_buf_get_name(buf)
-      -- Skip Neo-tree and other special buffers
-      if not bufname:match("neo%-tree") and vim.bo[buf].buftype == "" then
-        next_buf = buf
-        break
-      end
-    end
-  end
+  -- Try to switch to the next buffer first
+  vim.cmd("bnext")
   
-  -- If we found a valid buffer, switch to it first
-  if next_buf then
-    vim.api.nvim_set_current_buf(next_buf)
+  -- If we're still on the same buffer (meaning there was no next buffer),
+  -- try the previous buffer
+  if vim.api.nvim_get_current_buf() == current_buf then
+    vim.cmd("bprevious")
   end
   
   -- Now delete the original buffer
-  vim.cmd("bdelete " .. current_buf)
+  -- Use pcall to handle cases where buffer deletion might fail
+  local success, err = pcall(function()
+    vim.cmd("bdelete " .. current_buf)
+  end)
+  
+  if not success then
+    print("Failed to delete buffer: " .. err)
+  end
 end, { desc = "Delete buffer (smart)" })
 
 -- Copy relative path from git root
