@@ -4,9 +4,6 @@ return {
 	{
 		"greggh/claude-code.nvim",
 		cmd = "ClaudeCode",
-		keys = {
-			{ "<leader>cd", "<cmd>ClaudeCode<cr>", desc = "Toggle Claude Code" },
-		},
 		config = function()
 			require("claude-code").setup({
 				window = {
