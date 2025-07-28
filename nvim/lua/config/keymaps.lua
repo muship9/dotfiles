@@ -55,7 +55,7 @@ keymap("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
 keymap("n", "]b", "<cmd>bnext<cr>", { desc = "Next buffer" })
 keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
-keymap("n", "<leader>bd", function()
+keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
   
   -- Try to switch to the next buffer first
