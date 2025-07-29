@@ -30,7 +30,14 @@ return {
 				indent = {
 					enable = true,
 				},
+				matchup = {
+					enable = true,
+				},
 			})
 		end,
+	},
+	{
+		"andymass/vim-matchup",
+		dependencies = "nvim-treesitter/nvim-treesitter",
 	},
 }

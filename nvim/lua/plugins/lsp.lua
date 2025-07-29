@@ -35,7 +35,6 @@ return {
 					"lua_ls",
 					"marksman", -- Markdown LSP
 				},
-				automatic_installation = true,
 			})
 		end,
 	},
@@ -429,3 +428,4 @@ return {
 		end,
 	},
 }
+

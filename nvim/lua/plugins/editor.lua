@@ -27,6 +27,19 @@ return {
 						leave_dirs_open = true, -- `false` closes auto expanded dirs when navigating
 					},
 					use_libuv_file_watcher = true, -- This will use the OS level file watchers to detect changes
+					-- 必要最低限の表示にするためのrenderers設定
+					renderers = {
+						directory = {
+							{ "indent" },
+							{ "icon" },
+							{ "name" },
+						},
+						file = {
+							{ "indent" },
+							{ "icon" },
+							{ "name" },
+						},
+					},
 				},
 				window = {
 					mappings = {
@@ -44,8 +57,13 @@ return {
 									local name = vim.api.nvim_buf_get_name(buf)
 									local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 									-- Delete empty unnamed buffers (but not the current buffer)
-									if name == "" and #lines == 1 and lines[1] == "" and not vim.bo[buf].modified 
-										and buf ~= vim.api.nvim_get_current_buf() then
+									if
+										name == ""
+										and #lines == 1
+										and lines[1] == ""
+										and not vim.bo[buf].modified
+										and buf ~= vim.api.nvim_get_current_buf()
+									then
 										vim.api.nvim_buf_delete(buf, { force = true })
 									end
 								end
@@ -55,9 +73,7 @@ return {
 				},
 			})
 		end,
-	},
-
-	-- Fuzzy finder
+	}, -- Fuzzy finder
 	{
 		"nvim-telescope/telescope.nvim",
 		tag = "0.1.5",
@@ -165,15 +181,15 @@ return {
 		},
 		config = function()
 			-- Set NVIM environment variable for neovim-remote
-			vim.g.lazygit_nvim_remote_binary = '/Users/SHINP09/Library/Python/3.9/bin/nvr'
+			vim.g.lazygit_nvim_remote_binary = "/Users/SHINP09/Library/Python/3.9/bin/nvr"
 			vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
 			vim.g.lazygit_floating_window_scaling_factor = 0.9 -- scaling factor for floating window
-			vim.g.lazygit_floating_window_border_chars = {'╭', '─', '╮', '│', '╯', '─', '╰', '│'} -- customize lazygit popup window border characters
+			vim.g.lazygit_floating_window_border_chars = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" } -- customize lazygit popup window border characters
 			vim.g.lazygit_floating_window_use_plenary = 0 -- use plenary.nvim to manage floating window if available
 			vim.g.lazygit_use_neovim_remote = 1 -- Use neovim remote for terminal buffer
 			vim.g.lazygit_use_custom_config_file_path = 1 -- Use custom config file
-			vim.g.lazygit_config_file_path = vim.fn.expand('~/.config/lazygit/config.yml') -- Path to config file
-			
+			vim.g.lazygit_config_file_path = vim.fn.expand("~/.config/lazygit/config.yml") -- Path to config file
+
 			-- Ensure proper environment setup before opening lazygit
 			vim.api.nvim_create_autocmd("TermOpen", {
 				pattern = "term://*lazygit",
@@ -183,13 +199,21 @@ return {
 					if servername and servername ~= "" then
 						vim.fn.setenv("NVIM", servername)
 						-- Also set GIT_EDITOR to use nvr
-						vim.fn.setenv("GIT_EDITOR", "/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'")
-						vim.fn.setenv("EDITOR", "/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'")
-						vim.fn.setenv("VISUAL", "/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'")
+						vim.fn.setenv(
+							"GIT_EDITOR",
+							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+						)
+						vim.fn.setenv(
+							"EDITOR",
+							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+						)
+						vim.fn.setenv(
+							"VISUAL",
+							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+						)
 					end
 				end,
 			})
 		end,
 	},
-
 }
