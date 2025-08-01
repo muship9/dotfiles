@@ -12,6 +12,8 @@ return {
 
   tab_bar_at_bottom = true,
 
+  automatically_reload_config = true,
+
   -- key bindings
   keys = {
     {
