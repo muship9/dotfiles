@@ -11,5 +11,34 @@ return {
   color_scheme = "Kanagawa (Gogh)",
 
   tab_bar_at_bottom = true,
+
+  -- key bindings
+  keys = {
+    {
+      key = 'l',
+      mods = 'CMD',
+      action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+    },
+    {
+      key = 'h',
+      mods = 'CMD',
+      action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+    },
+    {
+      key = 'j',
+      mods = 'CMD',
+      action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+    },
+    {
+      key = 'k',
+      mods = 'CMD',
+      action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+    },
+    {
+      key = 'w',
+      mods = 'CMD|SHIFT',
+      action = wezterm.action.CloseCurrentPane { confirm = true },
+    },
+  },
 }
 

@@ -181,7 +181,19 @@ return {
 		},
 		config = function()
 			-- Set NVIM environment variable for neovim-remote
-			vim.g.lazygit_nvim_remote_binary = "/Users/SHINP09/Library/Python/3.9/bin/nvr"
+			-- Find the first available nvr executable
+local nvr_paths = {
+    "/opt/homebrew/bin/nvr",
+    "/Users/SHINP09/Library/Python/3.9/bin/nvr"
+}
+local nvr_binary = nil
+for _, path in ipairs(nvr_paths) do
+    if vim.fn.executable(path) == 1 then
+        nvr_binary = path
+        break
+    end
+end
+vim.g.lazygit_nvim_remote_binary = nvr_binary or ""
 			vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
 			vim.g.lazygit_floating_window_scaling_factor = 0.9 -- scaling factor for floating window
 			vim.g.lazygit_floating_window_border_chars = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" } -- customize lazygit popup window border characters
@@ -201,15 +213,15 @@ return {
 						-- Also set GIT_EDITOR to use nvr
 						vim.fn.setenv(
 							"GIT_EDITOR",
-							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+							((nvr_binary ~= nil and nvr_binary) or "") .. " --remote-tab-wait +'set bufhidden=wipe'"
 						)
 						vim.fn.setenv(
 							"EDITOR",
-							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+							((nvr_binary ~= nil and nvr_binary) or "") .. " --remote-tab-wait +'set bufhidden=wipe'"
 						)
 						vim.fn.setenv(
 							"VISUAL",
-							"/Users/SHINP09/Library/Python/3.9/bin/nvr --remote-tab-wait +'set bufhidden=wipe'"
+							((nvr_binary ~= nil and nvr_binary) or "") .. " --remote-tab-wait +'set bufhidden=wipe'"
 						)
 					end
 				end,
