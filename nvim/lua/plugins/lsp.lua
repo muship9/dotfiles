@@ -75,6 +75,12 @@ return {
 					"typescriptreact",
 					"typescript.tsx",
 				},
+				-- diagnosticのソース名を統一
+				init_options = {
+					preferences = {
+						includeInlayParameterNameHints = "all",
+					},
+				},
 			})
 
 			-- Go
@@ -182,12 +188,7 @@ return {
 						"<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>",
 						opts
 					)
-					vim.keymap.set(
-						"n",
-						"gy",
-						"<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>",
-						opts
-					)
+					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
 
 					-- 通常のLSPキーマップ
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
@@ -203,6 +204,39 @@ return {
 						require("telescope.builtin").lsp_dynamic_workspace_symbols()
 					end, opts)
 					vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
+					vim.keymap.set("n", "<leader>cd", function()
+						-- まず診断情報があるか確認
+						local diagnostics = vim.diagnostic.get(0, { lnum = vim.api.nvim_win_get_cursor(0)[1] - 1 })
+						if #diagnostics == 0 then
+							-- 現在行に診断情報がない場合は、バッファ全体から取得
+							diagnostics = vim.diagnostic.get(0)
+						end
+						if #diagnostics > 0 then
+							local _, winid = vim.diagnostic.open_float(nil, {
+								focus = false,
+								border = "none",
+								header = {},
+								suffix = {},
+								format = function(diagnostic)
+									if diagnostic.code then
+										return string.format(
+											"[%s](%s): %s",
+											diagnostic.source,
+											diagnostic.code,
+											diagnostic.message
+										)
+									else
+										return string.format("[%s]: %s", diagnostic.source, diagnostic.message)
+									end
+								end,
+							})
+							if winid then
+								vim.api.nvim_set_current_win(winid)
+							end
+						else
+							vim.notify("No diagnostics available", vim.log.levels.INFO)
+						end
+					end, opts)
 					vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
 					vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
 					vim.keymap.set("n", "<leader>q", function()
@@ -214,6 +248,55 @@ return {
 				end,
 			})
 
+			-- 重複するdiagnosticsをフィルタリング
+			local orig_handler = vim.diagnostic.handlers.virtual_text
+			vim.diagnostic.handlers.virtual_text = {
+				show = function(namespace, bufnr, diagnostics, opts)
+					-- 重複を除去
+					local filtered = {}
+					local seen = {}
+					for _, diag in ipairs(diagnostics) do
+						local key = string.format("%d:%s", diag.lnum, diag.message)
+						if not seen[key] then
+							seen[key] = true
+							table.insert(filtered, diag)
+						end
+					end
+					orig_handler.show(namespace, bufnr, filtered, opts)
+				end,
+				hide = orig_handler.hide,
+			}
+
+			-- Diagnostic configuration
+			vim.diagnostic.config({
+				virtual_text = {
+					prefix = "●",
+					spacing = 4,
+					-- 重複するメッセージを除外
+					virt_text_hide = false,
+				},
+				signs = true,
+				update_in_insert = false,
+				underline = true,
+				severity_sort = true,
+				-- 重複するdiagnosticsを処理
+				virtual_text_hide_severity = nil,
+				float = {
+					focusable = true,
+					style = "minimal",
+					border = "none",
+					header = {},
+					suffix = {},
+					format = function(diagnostic)
+						if diagnostic.code then
+							return string.format("[%s](%s): %s", diagnostic.source, diagnostic.code, diagnostic.message)
+						else
+							return string.format("[%s]: %s", diagnostic.source, diagnostic.message)
+						end
+					end,
+				},
+			})
+
 			-- Show line diagnostics automatically in hover window
 			vim.o.updatetime = 250
 			vim.api.nvim_create_autocmd("CursorHold", {
@@ -221,10 +304,22 @@ return {
 					local opts = {
 						focusable = false,
 						close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-						border = "rounded",
-						source = "always",
-						prefix = " ",
+						border = "none",
+						header = {},
+						suffix = {},
 						scope = "cursor",
+						format = function(diagnostic)
+							if diagnostic.code then
+								return string.format(
+									"[%s](%s): %s",
+									diagnostic.source,
+									diagnostic.code,
+									diagnostic.message
+								)
+							else
+								return string.format("[%s]: %s", diagnostic.source, diagnostic.message)
+							end
+						end,
 					}
 					vim.diagnostic.open_float(nil, opts)
 				end,
@@ -375,7 +470,8 @@ return {
 						vim.lsp.start({
 							name = "marksman",
 							cmd = cmd,
-							root_dir = util.root_pattern(".git", ".marksman.toml")(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+							root_dir = util.root_pattern(".git", ".marksman.toml")(vim.fn.expand("%:p:h"))
+								or vim.fn.getcwd(),
 						})
 					else
 						print("marksman not found. Please install it via Mason.")
@@ -428,4 +524,3 @@ return {
 		end,
 	},
 }
-
