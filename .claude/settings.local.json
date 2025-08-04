@@ -3,7 +3,8 @@
     "allow": [
       "Bash(nvim:*)",
       "Bash(pip3 list:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:zenn.dev)"
     ],
     "deny": []
   }
