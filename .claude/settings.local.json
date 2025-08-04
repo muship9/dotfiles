@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(nvim:*)",
-      "Bash(pip3 list:*)"
+      "Bash(pip3 list:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

@@ -36,6 +36,10 @@ opt.backup = false
 opt.undofile = true
 opt.undodir = vim.fn.stdpath("data") .. "/undo"
 
+-- File handling
+opt.fixeol = true  -- Automatically add newline at end of file when saving
+opt.eol = true     -- Keep end-of-line character
+
 -- Performance
 opt.updatetime = 250
 opt.timeoutlen = 300

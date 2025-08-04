@@ -182,12 +182,7 @@ return {
 						"<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>",
 						opts
 					)
-					vim.keymap.set(
-						"n",
-						"gy",
-						"<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>",
-						opts
-					)
+					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
 
 					-- 通常のLSPキーマップ
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
@@ -375,7 +370,8 @@ return {
 						vim.lsp.start({
 							name = "marksman",
 							cmd = cmd,
-							root_dir = util.root_pattern(".git", ".marksman.toml")(vim.fn.expand("%:p:h")) or vim.fn.getcwd(),
+							root_dir = util.root_pattern(".git", ".marksman.toml")(vim.fn.expand("%:p:h"))
+								or vim.fn.getcwd(),
 						})
 					else
 						print("marksman not found. Please install it via Mason.")
@@ -428,4 +424,3 @@ return {
 		end,
 	},
 }
-

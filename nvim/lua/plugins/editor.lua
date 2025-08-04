@@ -182,18 +182,20 @@ return {
 		config = function()
 			-- Set NVIM environment variable for neovim-remote
 			-- Find the first available nvr executable
-local nvr_paths = {
-    "/opt/homebrew/bin/nvr",
-    "/Users/SHINP09/Library/Python/3.9/bin/nvr"
-}
-local nvr_binary = nil
-for _, path in ipairs(nvr_paths) do
-    if vim.fn.executable(path) == 1 then
-        nvr_binary = path
-        break
-    end
-end
-vim.g.lazygit_nvim_remote_binary = nvr_binary or ""
+			local nvr_paths = {
+				"/opt/homebrew/bin/nvr",
+				"/usr/local/bin/nvr",
+				vim.fn.expand("~") .. "/Library/Python/3.9/bin/nvr",
+				vim.fn.expand("~") .. "/.local/bin/nvr",
+			}
+			local nvr_binary = nil
+			for _, path in ipairs(nvr_paths) do
+				if vim.fn.executable(path) == 1 then
+					nvr_binary = path
+					break
+				end
+			end
+			vim.g.lazygit_nvim_remote_binary = nvr_binary or ""
 			vim.g.lazygit_floating_window_winblend = 0 -- transparency of floating window
 			vim.g.lazygit_floating_window_scaling_factor = 0.9 -- scaling factor for floating window
 			vim.g.lazygit_floating_window_border_chars = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" } -- customize lazygit popup window border characters
