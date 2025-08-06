@@ -55,6 +55,20 @@ return {
     },
     {
       key = 'w',
+      mods = 'CMD',
+      action = wezterm.action_callback(function(window, pane)
+        local process_name = pane:get_foreground_process_name()
+        if process_name and process_name:find("nvim") then
+          -- Neovimが動作中の場合、Ctrl+Wを送信
+          window:perform_action({ SendKey = { key = "w", mods = "CTRL" } }, pane)
+        else
+          -- その他の場合は通常のタブクローズ
+          window:perform_action(wezterm.action.CloseCurrentTab { confirm = true }, pane)
+        end
+      end),
+    },
+    {
+      key = 'w',
       mods = 'CMD|SHIFT',
       action = wezterm.action.CloseCurrentPane { confirm = true },
     },

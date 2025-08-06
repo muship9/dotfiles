@@ -4,7 +4,14 @@
       "Bash(nvim:*)",
       "Bash(pip3 list:*)",
       "Bash(ls:*)",
-      "WebFetch(domain:zenn.dev)"
+      "WebFetch(domain:zenn.dev)",
+      "Bash(echo:*)",
+      "Bash(git config:*)",
+      "Bash(find:*)",
+      "Bash(nvr:*)",
+      "Bash(rg:*)",
+      "Bash(brew list:*)",
+      "Bash(brew install:*)"
     ],
     "deny": []
   }

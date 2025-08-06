@@ -78,6 +78,30 @@ keymap("n", "<leader>w", function()
   end
 end, { desc = "Delete buffer (smart)" })
 
+-- Command+W support (mapped through Wezterm as Ctrl+W)
+keymap("n", "<C-w>", function()
+  local current_buf = vim.api.nvim_get_current_buf()
+  
+  -- Try to switch to the next buffer first
+  vim.cmd("bnext")
+  
+  -- If we're still on the same buffer (meaning there was no next buffer),
+  -- try the previous buffer
+  if vim.api.nvim_get_current_buf() == current_buf then
+    vim.cmd("bprevious")
+  end
+  
+  -- Now delete the original buffer
+  -- Use pcall to handle cases where buffer deletion might fail
+  local success, err = pcall(function()
+    vim.cmd("bdelete " .. current_buf)
+  end)
+  
+  if not success then
+    print("Failed to delete buffer: " .. err)
+  end
+end, { desc = "Delete buffer with Cmd+W" })
+
 -- Copy relative path from git root
 keymap("n", "<leader>cp", function()
   local file_path = vim.fn.expand("%:p")

@@ -12,3 +12,7 @@ alias ga='git add'
 alias gc='git commit'
 alias gp='git pull'
 alias gpu='git push'
+alias gf='git fetch'
+alias gs='git switch'
+# 新規ブランチを作成して切り替え
+alias gsc='git switch -c'

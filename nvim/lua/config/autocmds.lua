@@ -100,13 +100,32 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Start Neovim server for nvr
+-- Start Neovim server for nvr (neovim-remote support)
 vim.api.nvim_create_autocmd("VimEnter", {
   group = augroup("nvim_server"),
   callback = function()
-    local server_address = vim.env.NVIM_LISTEN_ADDRESS or "/tmp/nvim.pipe"
-    if vim.fn.filereadable(server_address) == 0 then
-      vim.fn.serverstart(server_address)
+    -- Set up server for neovim-remote if not already running
+    if vim.v.servername == "" then
+      local server_address = vim.env.NVIM_LISTEN_ADDRESS or "/tmp/nvim.pipe"
+      
+      -- Try to start the server
+      local ok, result = pcall(vim.fn.serverstart, server_address)
+      if ok and result ~= "" then
+        -- Server started successfully, set environment variable for child processes
+        vim.env.NVIM = result
+        vim.notify("Neovim server started: " .. result, vim.log.levels.DEBUG)
+      else
+        -- Fallback to PID-based server name
+        local fallback_address = "/tmp/nvim-" .. vim.fn.getpid() .. ".sock"
+        local fallback_ok, fallback_result = pcall(vim.fn.serverstart, fallback_address)
+        if fallback_ok and fallback_result ~= "" then
+          vim.env.NVIM = fallback_result
+          vim.notify("Neovim server started (fallback): " .. fallback_result, vim.log.levels.DEBUG)
+        end
+      end
+    else
+      -- Server already running, ensure NVIM env var is set
+      vim.env.NVIM = vim.v.servername
     end
   end,
 })
