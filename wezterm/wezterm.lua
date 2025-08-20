@@ -33,23 +33,35 @@ return {
 
 	-- key bindings
 	keys = {
-		{
-			key = "l",
-			mods = "CMD",
-			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
-		},
+		-- ペイン移動 (vim風のhjkl)
 		{
 			key = "h",
 			mods = "CMD",
-			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
+			action = wezterm.action.ActivatePaneDirection("Left"),
 		},
 		{
 			key = "j",
 			mods = "CMD",
-			action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }),
+			action = wezterm.action.ActivatePaneDirection("Down"),
 		},
 		{
 			key = "k",
+			mods = "CMD",
+			action = wezterm.action.ActivatePaneDirection("Up"),
+		},
+		{
+			key = "l",
+			mods = "CMD",
+			action = wezterm.action.ActivatePaneDirection("Right"),
+		},
+		-- ペイン分割
+		{
+			key = "\\",
+			mods = "CMD",
+			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
+		},
+		{
+			key = "-",
 			mods = "CMD",
 			action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }),
 		},
@@ -68,9 +80,36 @@ return {
 			end),
 		},
 		{
-			key = "w",
-			mods = "CMD|SHIFT",
+			key = "d",
+			mods = "CMD",
 			action = wezterm.action.CloseCurrentPane({ confirm = true }),
+		},
+		-- Workspace関連のキーバインド
+		{
+			key = "9",
+			mods = "CMD",
+			action = wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }),
+		},
+		{
+			key = "n",
+			mods = "CMD",
+			action = wezterm.action.PromptInputLine({
+				description = wezterm.format({
+					{ Attribute = { Intensity = "Bold" } },
+					{ Foreground = { AnsiColor = "Fuchsia" } },
+					{ Text = "Enter workspace name:" },
+				}),
+				action = wezterm.action_callback(function(window, pane, line)
+					if line then
+						window:perform_action(
+							wezterm.action.SwitchToWorkspace({
+								name = line,
+							}),
+							pane
+						)
+					end
+				end),
+			}),
 		},
 	},
 }
