@@ -84,6 +84,27 @@ return {
 			mods = "CMD",
 			action = wezterm.action.CloseCurrentPane({ confirm = true }),
 		},
+		-- ペインサイズ調整
+		{
+			key = "H",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Left", 10 }),
+		},
+		{
+			key = "J",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Down", 10 }),
+		},
+		{
+			key = "K",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Up", 10 }),
+		},
+		{
+			key = "L",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Right", 10 }),
+		},
 		-- Workspace関連のキーバインド
 		{
 			key = "9",
