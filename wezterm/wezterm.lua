@@ -24,6 +24,12 @@ return {
 	-- color scheme
 	color_scheme = "Kanagawa (Gogh)",
 
+	-- 非アクティブなペインの明度を下げる
+	inactive_pane_hsb = {
+		saturation = 0.9,
+		brightness = 0.6,
+	},
+
 	tab_bar_at_bottom = true,
 
 	-- タブタイトルの設定
@@ -83,6 +89,27 @@ return {
 			key = "d",
 			mods = "CMD",
 			action = wezterm.action.CloseCurrentPane({ confirm = true }),
+		},
+		-- ペインサイズ変更
+		{
+			key = "h",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Left", 10 }),
+		},
+		{
+			key = "j",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Down", 5 }),
+		},
+		{
+			key = "k",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Up", 5 }),
+		},
+		{
+			key = "l",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.AdjustPaneSize({ "Right", 10 }),
 		},
 		-- Workspace関連のキーバインド
 		{

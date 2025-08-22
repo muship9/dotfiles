@@ -57,14 +57,21 @@ keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
 keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local alternate_buf = vim.fn.bufnr("#")
   
-  -- Try to switch to the next buffer first
-  vim.cmd("bnext")
-  
-  -- If we're still on the same buffer (meaning there was no next buffer),
-  -- try the previous buffer
-  if vim.api.nvim_get_current_buf() == current_buf then
-    vim.cmd("bprevious")
+  -- Check if alternate buffer is valid and listed
+  if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
+    -- Switch to alternate buffer (previously active file)
+    vim.cmd("buffer " .. alternate_buf)
+  else
+    -- Fallback: try to switch to the next buffer first
+    vim.cmd("bnext")
+    
+    -- If we're still on the same buffer (meaning there was no next buffer),
+    -- try the previous buffer
+    if vim.api.nvim_get_current_buf() == current_buf then
+      vim.cmd("bprevious")
+    end
   end
   
   -- Now delete the original buffer
@@ -81,14 +88,21 @@ end, { desc = "Delete buffer (smart)" })
 -- Command+W support (mapped through Wezterm as Ctrl+W)
 keymap("n", "<C-w>", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local alternate_buf = vim.fn.bufnr("#")
   
-  -- Try to switch to the next buffer first
-  vim.cmd("bnext")
-  
-  -- If we're still on the same buffer (meaning there was no next buffer),
-  -- try the previous buffer
-  if vim.api.nvim_get_current_buf() == current_buf then
-    vim.cmd("bprevious")
+  -- Check if alternate buffer is valid and listed
+  if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
+    -- Switch to alternate buffer (previously active file)
+    vim.cmd("buffer " .. alternate_buf)
+  else
+    -- Fallback: try to switch to the next buffer first
+    vim.cmd("bnext")
+    
+    -- If we're still on the same buffer (meaning there was no next buffer),
+    -- try the previous buffer
+    if vim.api.nvim_get_current_buf() == current_buf then
+      vim.cmd("bprevious")
+    end
   end
   
   -- Now delete the original buffer
