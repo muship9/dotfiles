@@ -8,10 +8,11 @@ alias idea="open -na 'IntelliJ IDEA' --args"
 
 # Git aliases
 alias gst='git status'
+alias gb='git branch'
 alias ga='git add'
-alias gc='git commit'
+alias gc='git commit -m'
 alias gp='git pull origin $(git branch --show-current)'
-alias gpu='git push'
+alias gpu='git push origin $(git branch --show-current)'
 alias gf='git fetch'
 alias gs='git switch'
 # 新規ブランチを作成して切り替え
