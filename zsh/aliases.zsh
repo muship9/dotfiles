@@ -35,3 +35,4 @@ alias cdl='cd ~/Downloads'
 # Obsidian aliases
 alias obs='cd ~/Documents/Obsidian\ Vault && nvim'
 alias obd='cd ~/Documents/Obsidian\ Vault && nvim daily/$(date +%Y-%m-%d).md'
+alias oby='echo -e "\n---\n$(date +"%H:%M")\n" >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && pbpaste >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && echo "✅ クリップボードの内容をデイリーノートに追加しました"'

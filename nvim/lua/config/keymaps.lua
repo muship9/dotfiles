@@ -290,3 +290,45 @@ keymap("n", "<leader>oa", function()
   -- AppleScriptを使ってObsidianをアクティブ化
   vim.fn.system([[osascript -e 'tell application "Obsidian" to activate']])
 end, { desc = "Activate Obsidian app" })
+
+-- 選択範囲またはカーソル行をObsidianデイリーノートに追加
+keymap("n", "<leader>oby", function()
+  -- ノーマルモードの場合：現在行を取得
+  local lines = vim.fn.getline('.')
+  
+  -- 現在時刻とセパレーターを追加
+  local timestamp = os.date("%H:%M")
+  local daily_file = vim.fn.expand("~/Documents/Obsidian Vault/daily/" .. os.date("%Y-%m-%d") .. ".md")
+  
+  -- ファイルに追加
+  local content = string.format("\n---\n%s\n%s\n", timestamp, lines)
+  local temp_file = vim.fn.tempname()
+  vim.fn.writefile(vim.split(content, '\n'), temp_file)
+  vim.fn.system(string.format("cat %s >> %s", vim.fn.shellescape(temp_file), vim.fn.shellescape(daily_file)))
+  vim.fn.delete(temp_file)
+  
+  vim.notify("Added to daily note (" .. timestamp .. ")", vim.log.levels.INFO)
+end, { desc = "Copy current line to daily note" })
+
+keymap("v", "<leader>oby", function()
+  -- ビジュアルモードの場合：選択範囲を取得
+  local start_pos = vim.fn.getpos("'<")
+  local end_pos = vim.fn.getpos("'>")
+  local lines = vim.fn.getline(start_pos[2], end_pos[2])
+  
+  -- 複数行の場合は改行で結合
+  local content_text = table.concat(lines, "\n")
+  
+  -- 現在時刻とセパレーターを追加
+  local timestamp = os.date("%H:%M")
+  local daily_file = vim.fn.expand("~/Documents/Obsidian Vault/daily/" .. os.date("%Y-%m-%d") .. ".md")
+  
+  -- ファイルに追加
+  local content = string.format("\n---\n%s\n%s\n", timestamp, content_text)
+  local temp_file = vim.fn.tempname()
+  vim.fn.writefile(vim.split(content, '\n'), temp_file)
+  vim.fn.system(string.format("cat %s >> %s", vim.fn.shellescape(temp_file), vim.fn.shellescape(daily_file)))
+  vim.fn.delete(temp_file)
+  
+  vim.notify("Added to daily note (" .. timestamp .. ")", vim.log.levels.INFO)
+end, { desc = "Copy selection to daily note" })
