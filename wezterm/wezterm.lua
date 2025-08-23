@@ -111,6 +111,17 @@ return {
 			mods = "CMD|SHIFT",
 			action = wezterm.action.AdjustPaneSize({ "Right", 10 }),
 		},
+		-- フォントサイズ変更
+		{
+			key = "+",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.IncreaseFontSize,
+		},
+		{
+			key = "-",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.DecreaseFontSize,
+		},
 		-- Workspace関連のキーバインド
 		{
 			key = "9",
