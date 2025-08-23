@@ -264,3 +264,29 @@ keymap("n", "<leader>gB", function()
   vim.fn.system(string.format("%s %s", open_cmd, vim.fn.shellescape(github_url)))
   print("Opened in GitHub: " .. github_url)
 end, { desc = "Open current file in GitHub" })
+
+-- Obsidian keymaps
+keymap("n", "<leader>on", "<cmd>ObsidianNew<cr>", { desc = "Create new Obsidian note" })
+keymap("n", "<leader>oo", function()
+  -- 常にObsidianをアクティブ化
+  vim.fn.system([[osascript -e 'tell application "Obsidian" to activate']])
+  
+  -- Obsidian Vault内のMarkdownファイルの場合は、追加でObsidianOpenも実行
+  if vim.bo.filetype == "markdown" and vim.fn.expand("%:p"):match("Obsidian Vault") then
+    vim.defer_fn(function()
+      pcall(vim.cmd, "ObsidianOpen")
+    end, 100)  -- 100ms遅延して実行
+  end
+end, { desc = "Open Obsidian app" })
+keymap("n", "<leader>os", "<cmd>ObsidianSearch<cr>", { desc = "Search Obsidian notes" })
+keymap("n", "<leader>oq", "<cmd>ObsidianQuickSwitch<cr>", { desc = "Quick switch Obsidian notes" })
+keymap("n", "<leader>od", "<cmd>ObsidianToday<cr>", { desc = "Open today's daily note" })
+keymap("n", "<leader>oy", "<cmd>ObsidianYesterday<cr>", { desc = "Open yesterday's daily note" })
+keymap("n", "<leader>ot", "<cmd>ObsidianTemplate<cr>", { desc = "Insert template" })
+keymap("n", "<leader>ob", "<cmd>ObsidianBacklinks<cr>", { desc = "Show backlinks" })
+keymap("n", "<leader>ol", "<cmd>ObsidianLinks<cr>", { desc = "Show links" })
+keymap("n", "<leader>ow", "<cmd>ObsidianWorkspace<cr>", { desc = "Switch workspace" })
+keymap("n", "<leader>oa", function()
+  -- AppleScriptを使ってObsidianをアクティブ化
+  vim.fn.system([[osascript -e 'tell application "Obsidian" to activate']])
+end, { desc = "Activate Obsidian app" })

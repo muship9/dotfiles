@@ -25,6 +25,7 @@ opt.cursorline = true
 opt.wrap = false
 opt.scrolloff = 8
 opt.sidescrolloff = 8
+opt.conceallevel = 2  -- ObsidianのUI機能を有効化
 
 -- Behavior
 opt.mouse = "a"

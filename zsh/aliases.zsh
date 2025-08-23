@@ -18,6 +18,7 @@ alias gs='git switch'
 # 新規ブランチを作成して切り替え
 alias gsc='git switch -c'
 alias gch='git checkout'
+alias gd='git diff'
 
 # Directory navigation aliases
 alias .='cd ./'
@@ -30,3 +31,7 @@ alias cdw='cd ~/workspace'
 alias cdesk='cd ~/Desktop'
 alias cdoc='cd ~/Documents'
 alias cdl='cd ~/Downloads'
+
+# Obsidian aliases
+alias obs='cd ~/Documents/Obsidian\ Vault && nvim'
+alias obd='cd ~/Documents/Obsidian\ Vault && nvim daily/$(date +%Y-%m-%d).md'
