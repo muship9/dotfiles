@@ -149,5 +149,73 @@ return {
 				end),
 			}),
 		},
+		-- Obsidian連携：選択範囲または現在行をデイリーノートに追加
+		{
+			key = "y",
+			mods = "CMD|SHIFT",
+			action = wezterm.action_callback(function(window, pane)
+				local content = ""
+				local content_type = ""
+				
+				-- 選択範囲を取得
+				local selection = window:get_selection_text_for_pane(pane)
+				if selection and selection ~= "" then
+					content = selection
+					content_type = "selection"
+				else
+					-- 選択範囲がない場合は現在行を取得
+					-- カーソル位置を取得してその行を選択
+					window:perform_action(wezterm.action.SelectTextAtMouseCursor("Line"), pane)
+					-- 少し待ってから選択範囲を取得
+					wezterm.sleep_ms(50)
+					local line_selection = window:get_selection_text_for_pane(pane)
+					if line_selection and line_selection ~= "" then
+						content = line_selection:gsub("^%s+", ""):gsub("%s+$", "") -- 前後の空白を削除
+						content_type = "current line"
+						-- 選択を解除
+						window:perform_action(wezterm.action.ClearSelection, pane)
+					end
+				end
+				
+				if content ~= "" then
+					-- 一時ファイルを作成してシェルスクリプトを実行
+					local temp_script = "/tmp/wezterm_obsidian_add.sh"
+					local daily_file = os.getenv("HOME") .. "/Documents/Obsidian Vault/daily/" .. os.date("%Y-%m-%d") .. ".md"
+					local timestamp = os.date("%H:%M")
+					
+					-- シェルスクリプトを作成
+					local script_content = string.format([[#!/bin/bash
+echo "" >> "%s"
+echo "---" >> "%s"
+echo "%s" >> "%s"
+echo "%s" >> "%s"
+]], daily_file, daily_file, timestamp, daily_file, content:gsub('"', '\\"'), daily_file)
+					
+					-- 一時ファイルに書き込み
+					local file = io.open(temp_script, "w")
+					if file then
+						file:write(script_content)
+						file:close()
+						
+						-- 実行権限を付与して実行
+						os.execute("chmod +x " .. temp_script)
+						local result = os.execute(temp_script)
+						
+						-- 一時ファイルを削除
+						os.remove(temp_script)
+						
+						if result == 0 then
+							window:toast_notification("Wezterm", "Added " .. content_type .. " to daily note (" .. timestamp .. ")", nil, 3000)
+						else
+							window:toast_notification("Wezterm", "Failed to add to daily note", nil, 3000)
+						end
+					else
+						window:toast_notification("Wezterm", "Failed to create temp script", nil, 3000)
+					end
+				else
+					window:toast_notification("Wezterm", "No content to add", nil, 3000)
+				end
+			end),
+		},
 	},
 }
