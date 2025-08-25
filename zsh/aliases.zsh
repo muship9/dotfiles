@@ -21,16 +21,47 @@ alias gch='git checkout'
 alias gd='git diff'
 
 # Directory navigation aliases
-alias .='cd ./'
-alias ..='cd ..'
-alias ...='cd ../..'
-alias ....='cd ../../..'
+.() {
+    if [ $# -eq 0 ]; then
+        cd ./
+    else
+        cd "$1"
+    fi
+}
+
+..() {
+    if [ $# -eq 0 ]; then
+        cd ..
+    else
+        cd "../$1"
+    fi
+}
+
+...() {
+    if [ $# -eq 0 ]; then
+        cd ../..
+    else
+        cd "../../$1"
+    fi
+}
+
+....() {
+    if [ $# -eq 0 ]; then
+        cd ../../..
+    else
+        cd "../../../$1"
+    fi
+}
+
 alias ~='cd ~'
 alias cdot='cd ~/dotfiles'
 alias cdw='cd ~/workspace'
 alias cdesk='cd ~/Desktop'
 alias cdoc='cd ~/Documents'
 alias cdl='cd ~/Downloads'
+
+# Git root directory navigation
+alias root='cd $(git rev-parse --show-toplevel 2>/dev/null || pwd)'
 
 # Obsidian aliases
 alias obs='cd ~/Documents/Obsidian\ Vault && nvim'
