@@ -28,7 +28,6 @@ return {
 		config = function()
 			require("mason-lspconfig").setup({
 				ensure_installed = {
-					-- "ts_ls", -- Disabled in favor of typescript-tools.nvim
 					"gopls",
 					"rust_analyzer",
 					"pyright",
@@ -61,27 +60,6 @@ return {
 					return util.root_pattern(pattern)(fname) or util.find_git_ancestor(fname) or vim.fn.getcwd()
 				end
 			end
-
-			-- TypeScript/JavaScript - Disabled in favor of typescript-tools.nvim
-			-- lspconfig.ts_ls.setup({
-			-- 	capabilities = capabilities,
-			-- 	root_dir = get_project_root({ "package.json", "tsconfig.json", "jsconfig.json", ".git" }),
-			-- 	single_file_support = true,
-			-- 	filetypes = {
-			-- 		"javascript",
-			-- 		"javascriptreact",
-			-- 		"javascript.jsx",
-			-- 		"typescript",
-			-- 		"typescriptreact",
-			-- 		"typescript.tsx",
-			-- 	},
-			-- 	-- diagnosticのソース名を統一
-			-- 	init_options = {
-			-- 		preferences = {
-			-- 			includeInlayParameterNameHints = "all",
-			-- 		},
-			-- 	},
-			-- })
 
 			-- Go
 			lspconfig.gopls.setup({
@@ -384,27 +362,6 @@ return {
 					return nil
 				end
 
-				-- TypeScript/JavaScript - Disabled in favor of typescript-tools.nvim
-				-- if ft == "typescript" or ft == "javascript" or ft == "typescriptreact" or ft == "javascriptreact" then
-				-- 	local cmd = find_cmd("typescript-language-server", {
-				-- 		"tsserver",
-				-- 		vim.fn.expand("~/.volta/bin/typescript-language-server"),
-				-- 		vim.fn.expand("~/.nvm/versions/node/*/bin/typescript-language-server"),
-				-- 	})
-				-- 	if cmd then
-				-- 		table.insert(cmd, "--stdio")
-				-- 		vim.lsp.start({
-				-- 			name = "ts_ls",
-				-- 			cmd = cmd,
-				-- 			root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(
-				-- 				vim.fn.expand("%:p:h")
-				-- 			) or vim.fn.getcwd(),
-				-- 			single_file_support = true,
-				-- 		})
-				-- 	else
-				-- 		print("TypeScript language server not found. Please install it via Mason or npm.")
-				-- 	end
-				-- elseif ft == "go" then
 				if ft == "go" then
 					local cmd = find_cmd("gopls")
 					if cmd then
