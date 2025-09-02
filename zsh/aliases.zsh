@@ -21,7 +21,8 @@ alias gch='git checkout'
 alias gd='git diff'
 
 # Directory navigation aliases
-.() {
+# Note: . is reserved for source command, using cd. instead
+cd.() {
     if [ $# -eq 0 ]; then
         cd ./
     else
@@ -29,7 +30,7 @@ alias gd='git diff'
     fi
 }
 
-..() {
+up() {
     if [ $# -eq 0 ]; then
         cd ..
     else
@@ -37,7 +38,7 @@ alias gd='git diff'
     fi
 }
 
-...() {
+up2() {
     if [ $# -eq 0 ]; then
         cd ../..
     else
@@ -45,7 +46,7 @@ alias gd='git diff'
     fi
 }
 
-....() {
+up3() {
     if [ $# -eq 0 ]; then
         cd ../../..
     else
