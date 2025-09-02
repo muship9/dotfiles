@@ -135,6 +135,10 @@ keymap("n", "<leader>cp", function()
   print("Copied: " .. relative_path)
 end, { desc = "Copy relative path from git root" })
 
+-- Jump to matching tag/bracket
+keymap("n", "<leader>gt", "%", { desc = "Jump to matching tag/bracket" })
+keymap("v", "<leader>gt", "%", { desc = "Jump to matching tag/bracket" })
+
 -- Git blame for current line
 keymap("n", "<leader>gb", function()
   local file_path = vim.fn.expand("%:p")

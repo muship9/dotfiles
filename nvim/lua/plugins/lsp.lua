@@ -28,7 +28,6 @@ return {
 		config = function()
 			require("mason-lspconfig").setup({
 				ensure_installed = {
-					"ts_ls",
 					"gopls",
 					"rust_analyzer",
 					"pyright",
@@ -61,27 +60,6 @@ return {
 					return util.root_pattern(pattern)(fname) or util.find_git_ancestor(fname) or vim.fn.getcwd()
 				end
 			end
-
-			-- TypeScript/JavaScript
-			lspconfig.ts_ls.setup({
-				capabilities = capabilities,
-				root_dir = get_project_root({ "package.json", "tsconfig.json", "jsconfig.json", ".git" }),
-				single_file_support = true,
-				filetypes = {
-					"javascript",
-					"javascriptreact",
-					"javascript.jsx",
-					"typescript",
-					"typescriptreact",
-					"typescript.tsx",
-				},
-				-- diagnosticのソース名を統一
-				init_options = {
-					preferences = {
-						includeInlayParameterNameHints = "all",
-					},
-				},
-			})
 
 			-- Go
 			lspconfig.gopls.setup({
@@ -384,26 +362,7 @@ return {
 					return nil
 				end
 
-				if ft == "typescript" or ft == "javascript" or ft == "typescriptreact" or ft == "javascriptreact" then
-					local cmd = find_cmd("typescript-language-server", {
-						"tsserver",
-						vim.fn.expand("~/.volta/bin/typescript-language-server"),
-						vim.fn.expand("~/.nvm/versions/node/*/bin/typescript-language-server"),
-					})
-					if cmd then
-						table.insert(cmd, "--stdio")
-						vim.lsp.start({
-							name = "ts_ls",
-							cmd = cmd,
-							root_dir = util.root_pattern("package.json", "tsconfig.json", "jsconfig.json", ".git")(
-								vim.fn.expand("%:p:h")
-							) or vim.fn.getcwd(),
-							single_file_support = true,
-						})
-					else
-						print("TypeScript language server not found. Please install it via Mason or npm.")
-					end
-				elseif ft == "go" then
+				if ft == "go" then
 					local cmd = find_cmd("gopls")
 					if cmd then
 						vim.lsp.start({
@@ -480,6 +439,73 @@ return {
 					print("No LSP configured for filetype: " .. ft)
 				end
 			end, {})
+		end,
+	},
+
+	-- TypeScript Tools - Alternative to typescript-language-server
+	{
+		"pmizio/typescript-tools.nvim",
+		dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+		ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+		config = function()
+			require("typescript-tools").setup({
+				on_attach = function(client, bufnr)
+					-- Disable formatting if you use prettier or another formatter
+					client.server_capabilities.documentFormattingProvider = false
+					client.server_capabilities.documentRangeFormattingProvider = false
+					
+					-- Buffer local mappings (similar to existing LSP mappings)
+					local opts = { buffer = bufnr, noremap = true, silent = true }
+					
+					-- Use FzfLua for definitions and references (matching existing setup)
+					vim.keymap.set("n", "gd", "<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set("n", "gi", "<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
+					
+					-- Standard LSP mappings
+					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
+					vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
+					
+					-- TypeScript specific commands
+					vim.keymap.set("n", "<leader>to", "<cmd>TSToolsOrganizeImports<cr>", { buffer = bufnr, desc = "Organize Imports" })
+					vim.keymap.set("n", "<leader>ts", "<cmd>TSToolsSortImports<cr>", { buffer = bufnr, desc = "Sort Imports" })
+					vim.keymap.set("n", "<leader>tr", "<cmd>TSToolsRemoveUnusedImports<cr>", { buffer = bufnr, desc = "Remove Unused Imports" })
+					vim.keymap.set("n", "<leader>tf", "<cmd>TSToolsFixAll<cr>", { buffer = bufnr, desc = "Fix All" })
+					
+					-- Diagnostic mappings
+					vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
+					vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+					vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+					
+					-- Enable completion triggered by <c-x><c-o>
+					vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
+				end,
+				settings = {
+					-- tsserver settings
+					tsserver_file_preferences = {
+						includeInlayParameterNameHints = "all",
+						includeCompletionsForModuleExports = true,
+						quotePreference = "auto",
+					},
+					tsserver_format_options = {
+						allowIncompleteCompletions = false,
+						allowRenameOfImportPath = false,
+					},
+					
+					-- Code lens settings
+					code_lens = "off", -- "all", "implementations_only", "references_only", "off"
+					disable_member_code_lens = true,
+					
+					-- JSX close tag
+					jsx_close_tag = {
+						enable = true,
+						filetypes = { "javascriptreact", "typescriptreact" },
+					}
+				},
+			})
 		end,
 	},
 
