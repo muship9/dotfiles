@@ -16,6 +16,7 @@ return {
 		},
 		config = function()
 			require("conform").setup({
+				notify_on_error = false,
 				formatters_by_ft = {
 					javascript = { "prettier" },
 					typescript = { "prettier" },
@@ -36,10 +37,9 @@ return {
 					if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
 						return
 					end
-					return { timeout_ms = 500, lsp_fallback = true }
+					return { timeout_ms = 1000, lsp_fallback = true }
 				end,
 			})
 		end,
 	},
 }
-
