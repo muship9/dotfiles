@@ -41,9 +41,9 @@ pip3 install neovim-remote
 ### 2. dotfilesのクローンとセットアップ
 
 ```bash
-# dotfilesをクローン
-git clone <your-repo-url> ~/.dotfiles
-cd ~/.dotfiles
+# dotfilesをクローン（例: ~/dotfiles 配下）
+git clone <your-repo-url> ~/dotfiles
+cd ~/dotfiles
 
 # デプロイスクリプトを実行
 chmod +x deploy.sh
@@ -55,6 +55,12 @@ chmod +x deploy.sh
 ```bash
 # zshrc設定を反映
 source ~/.zshrc
+```
+
+### 4. Gitのグローバルignore設定（任意）
+
+```bash
+git config --global core.excludesFile "$HOME/.config/git/ignore"
 ```
 
 ## 含まれる設定
@@ -170,7 +176,7 @@ source ~/.zshrc
 dotfiles/
 ├── README.md          # このファイル
 ├── CLAUDE.md          # Claude Code用プロジェクト設定
-├── deploy.sh          # デプロイスクリプト
+├── deploy.sh          # デプロイスクリプト（~/.zshrc, ~/.config/* へリンク）
 ├── nvim/              # Neovim設定
 │   ├── init.lua
 │   └── lua/
@@ -183,13 +189,13 @@ dotfiles/
 │   └── ...
 ├── starship/          # Starshipプロンプト設定
 ├── wezterm/           # WezTerm設定
-└── git/               # Git設定
+└── git/               # Git設定（global ignore）
 ```
 
 ## 更新
 
 ```bash
-cd ~/.dotfiles
+cd ~/dotfiles
 git pull
 ./deploy.sh  # 必要に応じて
 ```
