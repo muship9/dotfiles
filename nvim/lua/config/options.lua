@@ -60,8 +60,10 @@ opt.ruler = false  -- Don't show cursor position in command line
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
--- Suppress deprecation warnings from plugins
-vim.deprecate = function() end
+-- Suppress deprecation warnings only when explicitly requested
+if vim.env.DOTFILES_SILENCE_DEPRECATIONS == "1" then
+  vim.deprecate = function() end
+end
 
 -- Neovim server setup for neovim-remote (nvr) is handled in autocmds.lua
 -- This ensures consistent server management
