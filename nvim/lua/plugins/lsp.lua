@@ -1,4 +1,5 @@
 -- LSP Configuration
+-- tj
 return {
 	-- Mason (LSP installer) - バイナリインストールのみ
 	{
@@ -275,6 +276,43 @@ return {
 				},
 			})
 
+			-- LSPハンドラーの最適化
+			local orig_hover = vim.lsp.handlers["textDocument/hover"]
+			vim.lsp.handlers["textDocument/hover"] = function(err, result, ctx, config)
+				if result and result.contents then
+					-- hover内容を制限
+					if type(result.contents) == "string" and #result.contents > 5000 then
+						result.contents = string.sub(result.contents, 1, 5000) .. "\n\n... (truncated)"
+					elseif type(result.contents) == "table" and result.contents.value and #result.contents.value > 5000 then
+						result.contents.value = string.sub(result.contents.value, 1, 5000) .. "\n\n... (truncated)"
+					end
+				end
+				orig_hover(err, result, ctx, config)
+			end
+
+			-- signature helpの最適化
+			local orig_signature = vim.lsp.handlers["textDocument/signatureHelp"]
+			vim.lsp.handlers["textDocument/signatureHelp"] = function(err, result, ctx, config)
+				if result and result.signatures then
+					-- signature数を制限
+					if #result.signatures > 3 then
+						result.signatures = {result.signatures[1], result.signatures[2], result.signatures[3]}
+					end
+				end
+				orig_signature(err, result, ctx, config)
+			end
+
+			-- 大規模ファイル用のタイムアウト調整
+			vim.api.nvim_create_autocmd("BufReadPost", {
+				callback = function(args)
+					local size = vim.fn.getfsize(args.file)
+					if size > 1024 * 1024 then -- 1MB以上
+						-- タイムアウトを延長
+						vim.bo[args.buf].updatetime = 500
+					end
+				end,
+			})
+
 			-- Show line diagnostics automatically in hover window
 			vim.o.updatetime = 250
 			vim.api.nvim_create_autocmd("CursorHold", {
@@ -330,6 +368,35 @@ return {
 					end
 				end
 			end, {})
+
+			-- LSPクライアントの全体的な設定
+			vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+				vim.lsp.handlers.hover, {
+					border = "none",
+					max_width = 80,
+				}
+			)
+			
+			vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
+				vim.lsp.handlers.signature_help, {
+					border = "none",
+					max_width = 80,
+				}
+			)
+			
+			-- 大規模ファイル用のLSP設定
+			local orig_buf_request = vim.lsp.buf_request
+			vim.lsp.buf_request = function(bufnr, method, params, handler)
+				local timeout = 5000 -- 5秒のタイムアウト
+				
+				-- ファイルサイズをチェック
+				local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(bufnr))
+				if ok and stats and stats.size > 1000000 then -- 1MB以上のファイル
+					timeout = 10000 -- 10秒に延長
+				end
+				
+				return orig_buf_request(bufnr, method, params, handler)
+			end
 
 			-- Create a command to manually start LSP
 			vim.api.nvim_create_user_command("LspStart", function()
@@ -453,57 +520,96 @@ return {
 					-- Disable formatting if you use prettier or another formatter
 					client.server_capabilities.documentFormattingProvider = false
 					client.server_capabilities.documentRangeFormattingProvider = false
-					
+
 					-- Buffer local mappings (similar to existing LSP mappings)
 					local opts = { buffer = bufnr, noremap = true, silent = true }
-					
+
 					-- Use FzfLua for definitions and references (matching existing setup)
-					vim.keymap.set("n", "gd", "<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>", opts)
-					vim.keymap.set("n", "gr", "<cmd>FzfLua lsp_references jump1=true ignore_current_line=true<cr>", opts)
-					vim.keymap.set("n", "gi", "<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set(
+						"n",
+						"gd",
+						"<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>",
+						opts
+					)
+					vim.keymap.set(
+						"n",
+						"gr",
+						"<cmd>FzfLua lsp_references jump1=true ignore_current_line=true<cr>",
+						opts
+					)
+					vim.keymap.set(
+						"n",
+						"gi",
+						"<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>",
+						opts
+					)
 					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
-					
+
 					-- Standard LSP mappings
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 					vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
 					vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
 					vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, opts)
-					
+
 					-- TypeScript specific commands
-					vim.keymap.set("n", "<leader>to", "<cmd>TSToolsOrganizeImports<cr>", { buffer = bufnr, desc = "Organize Imports" })
-					vim.keymap.set("n", "<leader>ts", "<cmd>TSToolsSortImports<cr>", { buffer = bufnr, desc = "Sort Imports" })
-					vim.keymap.set("n", "<leader>tr", "<cmd>TSToolsRemoveUnusedImports<cr>", { buffer = bufnr, desc = "Remove Unused Imports" })
+					vim.keymap.set(
+						"n",
+						"<leader>to",
+						"<cmd>TSToolsOrganizeImports<cr>",
+						{ buffer = bufnr, desc = "Organize Imports" }
+					)
+					vim.keymap.set(
+						"n",
+						"<leader>ts",
+						"<cmd>TSToolsSortImports<cr>",
+						{ buffer = bufnr, desc = "Sort Imports" }
+					)
+					vim.keymap.set(
+						"n",
+						"<leader>tr",
+						"<cmd>TSToolsRemoveUnusedImports<cr>",
+						{ buffer = bufnr, desc = "Remove Unused Imports" }
+					)
 					vim.keymap.set("n", "<leader>tf", "<cmd>TSToolsFixAll<cr>", { buffer = bufnr, desc = "Fix All" })
-					
+
 					-- Diagnostic mappings
 					vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
 					vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
 					vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-					
+
 					-- Enable completion triggered by <c-x><c-o>
 					vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
 				end,
 				settings = {
+					-- メモリ制限設定 (4GB - V8の実質的な上限)
+					tsserver_max_memory = 4096,
+					
+					-- 診断用に別のtsserverインスタンスを使用（メモリ圧迫を軽減）
+					separate_diagnostic_server = true,
+					
 					-- tsserver settings
 					tsserver_file_preferences = {
 						includeInlayParameterNameHints = "all",
 						includeCompletionsForModuleExports = true,
 						quotePreference = "auto",
+						-- 大規模ファイル用のパフォーマンス設定
+						disableSuggestions = false,
+						useLabelDetailsInCompletionEntries = true,
 					},
 					tsserver_format_options = {
 						allowIncompleteCompletions = false,
 						allowRenameOfImportPath = false,
 					},
-					
+
 					-- Code lens settings
 					code_lens = "off", -- "all", "implementations_only", "references_only", "off"
 					disable_member_code_lens = true,
-					
+
 					-- JSX close tag
 					jsx_close_tag = {
 						enable = true,
 						filetypes = { "javascriptreact", "typescriptreact" },
-					}
+					},
 				},
 			})
 		end,
@@ -540,12 +646,50 @@ return {
 					["<S-Tab>"] = cmp.mapping.select_prev_item(),
 				}),
 				sources = cmp.config.sources({
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
+					{ 
+						name = "nvim_lsp",
+						-- 大規模ファイル用の最適化
+						max_item_count = 50,
+						priority = 1000,
+					},
+					{ 
+						name = "luasnip",
+						max_item_count = 10,
+						priority = 750,
+					},
 				}, {
-					{ name = "buffer" },
-					{ name = "path" },
+					{ 
+						name = "buffer",
+						max_item_count = 10,
+						priority = 500,
+						option = {
+							get_bufnrs = function()
+								-- 現在のバッファのみを対象にする（大規模プロジェクトでのパフォーマンス向上）
+								return { vim.api.nvim_get_current_buf() }
+							end,
+						},
+					},
+					{ 
+						name = "path",
+						max_item_count = 10,
+						priority = 250,
+					},
 				}),
+				-- パフォーマンス設定
+				performance = {
+					debounce = 60,
+					throttle = 30,
+					fetching_timeout = 500,
+					confirm_resolve_timeout = 80,
+					async_budget = 1,
+					max_view_entries = 50,
+				},
+				-- 補完ウィンドウの設定
+				window = {
+					completion = {
+						scrollbar = false,
+					},
+				},
 			})
 		end,
 	},

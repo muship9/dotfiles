@@ -2,59 +2,117 @@
 local keymap = vim.keymap.set
 
 -- Better window navigation
-keymap("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
-keymap("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
-keymap("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
-keymap("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
+keymap("n", "<C-h>", "<C-w>h", { desc = "左のウィンドウへ移動" })
+keymap("n", "<C-j>", "<C-w>j", { desc = "下のウィンドウへ移動" })
+keymap("n", "<C-k>", "<C-w>k", { desc = "上のウィンドウへ移動" })
+keymap("n", "<C-l>", "<C-w>l", { desc = "右のウィンドウへ移動" })
 
 -- Alternative window navigation (in case <C-l> conflicts)
-keymap("n", "<leader>wh", "<C-w>h", { desc = "Go to left window" })
-keymap("n", "<leader>wj", "<C-w>j", { desc = "Go to lower window" })
-keymap("n", "<leader>wk", "<C-w>k", { desc = "Go to upper window" })
-keymap("n", "<leader>wr", "<C-w>l", { desc = "Go to right window" })
+keymap("n", "<leader>wh", "<C-w>h", { desc = "左のウィンドウへ移動" })
+keymap("n", "<leader>wj", "<C-w>j", { desc = "下のウィンドウへ移動" })
+keymap("n", "<leader>wk", "<C-w>k", { desc = "上のウィンドウへ移動" })
+keymap("n", "<leader>wr", "<C-w>l", { desc = "右のウィンドウへ移動" })
 
 -- Resize window using <ctrl> arrow keys
-keymap("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "Increase window height" })
-keymap("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "Decrease window height" })
-keymap("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "Decrease window width" })
-keymap("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "Increase window width" })
+keymap("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "ウィンドウの高さを増やす" })
+keymap("n", "<C-Down>", "<cmd>resize -2<cr>", { desc = "ウィンドウの高さを減らす" })
+keymap("n", "<C-Left>", "<cmd>vertical resize -2<cr>", { desc = "ウィンドウの幅を減らす" })
+keymap("n", "<C-Right>", "<cmd>vertical resize +2<cr>", { desc = "ウィンドウの幅を増やす" })
 
 -- Move Lines
-keymap("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "Move down" })
-keymap("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "Move up" })
-keymap("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "Move down" })
-keymap("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "Move up" })
-keymap("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "Move down" })
-keymap("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "Move up" })
+keymap("n", "<A-j>", "<cmd>m .+1<cr>==", { desc = "行を下へ移動" })
+keymap("n", "<A-k>", "<cmd>m .-2<cr>==", { desc = "行を上へ移動" })
+keymap("i", "<A-j>", "<esc><cmd>m .+1<cr>==gi", { desc = "行を下へ移動" })
+keymap("i", "<A-k>", "<esc><cmd>m .-2<cr>==gi", { desc = "行を上へ移動" })
+keymap("v", "<A-j>", ":m '>+1<cr>gv=gv", { desc = "行を下へ移動" })
+keymap("v", "<A-k>", ":m '<-2<cr>gv=gv", { desc = "行を上へ移動" })
 
 -- Clear search with <esc>
-keymap({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "Escape and clear hlsearch" })
+keymap({ "i", "n" }, "<esc>", "<cmd>noh<cr><esc>", { desc = "検索ハイライトをクリア" })
 
 -- Better indenting
 keymap("v", "<", "<gv")
 keymap("v", ">", ">gv")
 
 -- Save file
-keymap({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "Save file" })
+keymap({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "ファイルを保存" })
+
+-- Help
+keymap("n", "<leader>h", "<cmd>Telescope keymaps<cr>", { desc = "キーマップ一覧を表示" })
 
 -- Quit
-keymap("n", "<leader>qq", "<cmd>qa!<cr>", { desc = "Quit all (force)" })
-keymap("n", "<leader>qw", "<cmd>wqa<cr>", { desc = "Save all and quit" })
-keymap("n", "<leader>qa", "<cmd>qa<cr>", { desc = "Quit all" })
+keymap("n", "<leader>qq", "<cmd>qa!<cr>", { desc = "すべて強制終了" })
+keymap("n", "<leader>qw", "<cmd>wqa<cr>", { desc = "すべて保存して終了" })
+keymap("n", "<leader>qa", "<cmd>qa<cr>", { desc = "すべて終了" })
 
 -- Windows
-keymap("n", "<leader>ww", "<C-W>p", { desc = "Other window" })
-keymap("n", "<leader>wd", "<C-W>c", { desc = "Delete window" })
-keymap("n", "<leader>wb", "<C-W>s", { desc = "Split window below (horizontal)" })
-keymap("n", "<leader>wl", "<C-W>v", { desc = "Split window right (vertical)" })
+keymap("n", "<leader>ww", "<C-W>p", { desc = "前のウィンドウへ" })
+keymap("n", "<leader>wd", "<C-W>c", { desc = "ウィンドウを削除" })
+keymap("n", "<leader>wb", "<C-W>s", { desc = "水平分割（下）" })
+keymap("n", "<leader>wl", "<C-W>v", { desc = "垂直分割（右）" })
 
 -- Buffers
-keymap("n", "<S-h>", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
-keymap("n", "<S-l>", "<cmd>bnext<cr>", { desc = "Next buffer" })
-keymap("n", "[b", "<cmd>bprevious<cr>", { desc = "Prev buffer" })
-keymap("n", "]b", "<cmd>bnext<cr>", { desc = "Next buffer" })
-keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
-keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "Switch to Other Buffer" })
+keymap("n", "<S-h>", function()
+  -- バッファリストを取得
+  local buffers = vim.fn.getbufinfo({ buflisted = 1 })
+  if #buffers <= 1 then
+    return
+  end
+  
+  -- 現在のバッファ番号を取得
+  local current = vim.api.nvim_get_current_buf()
+  local current_index = nil
+  
+  -- 現在のバッファのインデックスを見つける
+  for i, buf in ipairs(buffers) do
+    if buf.bufnr == current then
+      current_index = i
+      break
+    end
+  end
+  
+  if current_index then
+    -- 前のバッファに移動（ループする）
+    local prev_index = current_index - 1
+    if prev_index < 1 then
+      prev_index = #buffers
+    end
+    vim.api.nvim_set_current_buf(buffers[prev_index].bufnr)
+  end
+end, { desc = "左のバッファへ移動" })
+
+keymap("n", "<S-l>", function()
+  -- バッファリストを取得
+  local buffers = vim.fn.getbufinfo({ buflisted = 1 })
+  if #buffers <= 1 then
+    return
+  end
+  
+  -- 現在のバッファ番号を取得
+  local current = vim.api.nvim_get_current_buf()
+  local current_index = nil
+  
+  -- 現在のバッファのインデックスを見つける
+  for i, buf in ipairs(buffers) do
+    if buf.bufnr == current then
+      current_index = i
+      break
+    end
+  end
+  
+  if current_index then
+    -- 次のバッファに移動（ループする）
+    local next_index = current_index + 1
+    if next_index > #buffers then
+      next_index = 1
+    end
+    vim.api.nvim_set_current_buf(buffers[next_index].bufnr)
+  end
+end, { desc = "右のバッファへ移動" })
+keymap("n", "[b", "<cmd>bprevious<cr>", { desc = "前のバッファ" })
+keymap("n", "]b", "<cmd>bnext<cr>", { desc = "次のバッファ" })
+keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
+keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
 keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local alternate_buf = vim.fn.bufnr("#")
@@ -83,10 +141,10 @@ keymap("n", "<leader>w", function()
   if not success then
     print("Failed to delete buffer: " .. err)
   end
-end, { desc = "Delete buffer (smart)" })
+end, { desc = "バッファを削除（スマート）" })
 
--- Command+W support (mapped through Wezterm as Ctrl+W)
-keymap("n", "<C-w>", function()
+-- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
+keymap("n", "<C-S-w>", function()
   local current_buf = vim.api.nvim_get_current_buf()
   local alternate_buf = vim.fn.bufnr("#")
   
@@ -114,7 +172,7 @@ keymap("n", "<C-w>", function()
   if not success then
     print("Failed to delete buffer: " .. err)
   end
-end, { desc = "Delete buffer with Cmd+W" })
+end, { desc = "バッファを削除（Ctrl+Shift+W）" })
 
 -- Copy relative path from git root
 keymap("n", "<leader>cp", function()
@@ -133,11 +191,11 @@ keymap("n", "<leader>cp", function()
   local relative_path = vim.fn.fnamemodify(file_path, ":s?" .. git_root .. "/??")
   vim.fn.setreg("+", relative_path)
   print("Copied: " .. relative_path)
-end, { desc = "Copy relative path from git root" })
+end, { desc = "Gitルートからの相対パスをコピー" })
 
 -- Jump to matching tag/bracket
-keymap("n", "<leader>gt", "%", { desc = "Jump to matching tag/bracket" })
-keymap("v", "<leader>gt", "%", { desc = "Jump to matching tag/bracket" })
+keymap("n", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })
+keymap("v", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })
 
 -- Git blame for current line
 keymap("n", "<leader>gb", function()
@@ -208,7 +266,7 @@ keymap("n", "<leader>gb", function()
       print("Failed to parse git blame output")
     end
   end
-end, { desc = "Git blame for current line" })
+end, { desc = "現在行のGit blame表示" })
 
 -- Open current file in GitHub
 keymap("n", "<leader>gB", function()
@@ -267,10 +325,10 @@ keymap("n", "<leader>gB", function()
   
   vim.fn.system(string.format("%s %s", open_cmd, vim.fn.shellescape(github_url)))
   print("Opened in GitHub: " .. github_url)
-end, { desc = "Open current file in GitHub" })
+end, { desc = "現在のファイルをGitHubで開く" })
 
 -- Obsidian keymaps
-keymap("n", "<leader>on", "<cmd>ObsidianNew<cr>", { desc = "Create new Obsidian note" })
+keymap("n", "<leader>on", "<cmd>ObsidianNew<cr>", { desc = "Obsidianノートを新規作成" })
 keymap("n", "<leader>oo", function()
   -- 常にObsidianをアクティブ化
   vim.fn.system([[osascript -e 'tell application "Obsidian" to activate']])
@@ -281,19 +339,19 @@ keymap("n", "<leader>oo", function()
       pcall(vim.cmd, "ObsidianOpen")
     end, 100)  -- 100ms遅延して実行
   end
-end, { desc = "Open Obsidian app" })
-keymap("n", "<leader>os", "<cmd>ObsidianSearch<cr>", { desc = "Search Obsidian notes" })
-keymap("n", "<leader>oq", "<cmd>ObsidianQuickSwitch<cr>", { desc = "Quick switch Obsidian notes" })
-keymap("n", "<leader>od", "<cmd>ObsidianToday<cr>", { desc = "Open today's daily note" })
-keymap("n", "<leader>oy", "<cmd>ObsidianYesterday<cr>", { desc = "Open yesterday's daily note" })
-keymap("n", "<leader>ot", "<cmd>ObsidianTemplate<cr>", { desc = "Insert template" })
-keymap("n", "<leader>ob", "<cmd>ObsidianBacklinks<cr>", { desc = "Show backlinks" })
-keymap("n", "<leader>ol", "<cmd>ObsidianLinks<cr>", { desc = "Show links" })
-keymap("n", "<leader>ow", "<cmd>ObsidianWorkspace<cr>", { desc = "Switch workspace" })
+end, { desc = "Obsidianアプリを開く" })
+keymap("n", "<leader>os", "<cmd>ObsidianSearch<cr>", { desc = "Obsidianノートを検索" })
+keymap("n", "<leader>oq", "<cmd>ObsidianQuickSwitch<cr>", { desc = "Obsidianノートのクイック切り替え" })
+keymap("n", "<leader>od", "<cmd>ObsidianToday<cr>", { desc = "今日のデイリーノートを開く" })
+keymap("n", "<leader>oy", "<cmd>ObsidianYesterday<cr>", { desc = "昨日のデイリーノートを開く" })
+keymap("n", "<leader>ot", "<cmd>ObsidianTemplate<cr>", { desc = "テンプレートを挿入" })
+keymap("n", "<leader>ob", "<cmd>ObsidianBacklinks<cr>", { desc = "バックリンクを表示" })
+keymap("n", "<leader>ol", "<cmd>ObsidianLinks<cr>", { desc = "リンクを表示" })
+keymap("n", "<leader>ow", "<cmd>ObsidianWorkspace<cr>", { desc = "ワークスペースを切り替え" })
 keymap("n", "<leader>oa", function()
   -- AppleScriptを使ってObsidianをアクティブ化
   vim.fn.system([[osascript -e 'tell application "Obsidian" to activate']])
-end, { desc = "Activate Obsidian app" })
+end, { desc = "Obsidianアプリをアクティブ化" })
 
 -- 選択範囲またはカーソル行をObsidianデイリーノートに追加
 keymap("n", "<leader>oby", function()
@@ -312,7 +370,7 @@ keymap("n", "<leader>oby", function()
   vim.fn.delete(temp_file)
   
   vim.notify("Added to daily note (" .. timestamp .. ")", vim.log.levels.INFO)
-end, { desc = "Copy current line to daily note" })
+end, { desc = "現在行をデイリーノートにコピー" })
 
 keymap("v", "<leader>oby", function()
   -- ビジュアルモードの場合：選択範囲を取得
@@ -335,4 +393,4 @@ keymap("v", "<leader>oby", function()
   vim.fn.delete(temp_file)
   
   vim.notify("Added to daily note (" .. timestamp .. ")", vim.log.levels.INFO)
-end, { desc = "Copy selection to daily note" })
+end, { desc = "選択範囲をデイリーノートにコピー" })
