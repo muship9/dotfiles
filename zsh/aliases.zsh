@@ -22,7 +22,8 @@ alias gd='git diff'
 
 # Directory navigation aliases
 # Note: . is reserved for source command, using cd. instead
-cd.() {
+# Directory navigation helpers (avoid overriding POSIX '.')
+c.() {
     if [ $# -eq 0 ]; then
         cd ./
     else
@@ -30,7 +31,7 @@ cd.() {
     fi
 }
 
-up() {
+c..() {
     if [ $# -eq 0 ]; then
         cd ..
     else
@@ -38,7 +39,7 @@ up() {
     fi
 }
 
-up2() {
+c...() {
     if [ $# -eq 0 ]; then
         cd ../..
     else
@@ -46,7 +47,7 @@ up2() {
     fi
 }
 
-up3() {
+c....() {
     if [ $# -eq 0 ]; then
         cd ../../..
     else
