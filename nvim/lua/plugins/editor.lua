@@ -26,7 +26,8 @@ return {
 						enabled = true, -- This will find and focus the file in the active buffer every time
 						leave_dirs_open = true, -- `false` closes auto expanded dirs when navigating
 					},
-					use_libuv_file_watcher = true, -- This will use the OS level file watchers to detect changes
+					-- File watchers can be heavy in very large repos; disable for performance
+					use_libuv_file_watcher = false,
 					-- 必要最低限の表示にするためのrenderers設定
 					renderers = {
 						directory = {
@@ -88,13 +89,82 @@ return {
 			{ "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help tags" },
 		},
 		config = function()
-			require("telescope").setup({
+			local telescope = require("telescope")
+			local has_fd = vim.fn.executable("fd") == 1
+            local ignore = {
+                "node_modules",
+                ".git",
+                "dist",
+                "build",
+                "target",
+                ".venv",
+                ".tox",
+                ".idea",
+                ".next",
+                ".cache",
+                "coverage",
+                "vendor",
+                ".pnpm-store",
+                ".yarn/cache",
+                ".terraform",
+                "Pods",
+            }
+			-- Build commands for find_files depending on availability
+			local find_cmd
+			if has_fd then
+				find_cmd = { "fd", "--type", "f", "--color", "never", "--hidden", "--strip-cwd-prefix" }
+				for _, pat in ipairs(ignore) do
+					table.insert(find_cmd, "--exclude")
+					table.insert(find_cmd, pat)
+				end
+			else
+				find_cmd = { "rg", "--files", "--hidden", "--follow" }
+				for _, pat in ipairs(ignore) do
+					table.insert(find_cmd, "-g")
+					table.insert(find_cmd, "!" .. pat .. "/**")
+				end
+			end
+
+			telescope.setup({
 				defaults = {
 					mappings = {
 						i = {
 							["<C-u>"] = false,
 							["<C-d>"] = false,
 						},
+					},
+					file_ignore_patterns = ignore,
+					vimgrep_arguments = (function()
+						local args = {
+							"rg",
+							"--color=never",
+							"--no-heading",
+							"--with-filename",
+							"--line-number",
+							"--column",
+							"--smart-case",
+							"--hidden",
+						}
+						for _, pat in ipairs(ignore) do
+							table.insert(args, "-g")
+							table.insert(args, "!" .. pat .. "/**")
+						end
+						return args
+					end)(),
+				},
+				pickers = {
+					find_files = {
+						find_command = find_cmd,
+					},
+					live_grep = {
+						additional_args = function()
+							local args = { "--hidden" }
+							for _, pat in ipairs(ignore) do
+								table.insert(args, "-g")
+								table.insert(args, "!" .. pat .. "/**")
+							end
+							return args
+						end,
 					},
 				},
 			})
@@ -106,7 +176,37 @@ return {
 		"ibhagwan/fzf-lua",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
-			require("fzf-lua").setup({})
+        local ignore = {
+            ".git", "node_modules", "dist", "build", "target", ".venv", ".tox", ".idea", ".next", ".cache", "coverage",
+            "vendor", ".pnpm-store", ".yarn/cache", ".terraform", "Pods",
+        }
+			require("fzf-lua").setup({
+				files = {
+					fd_opts = (function()
+						local opts = "--color=never --type f --hidden --follow"
+						for _, pat in ipairs(ignore) do
+							opts = opts .. " --exclude " .. pat
+						end
+						return opts
+					end)(),
+					rg_opts = (function()
+						local opts = "--color=never --files --hidden --follow"
+						for _, pat in ipairs(ignore) do
+							opts = opts .. " -g !" .. pat .. "/**"
+						end
+						return opts
+					end)(),
+				},
+				grep = {
+					rg_opts = (function()
+						local opts = "--column --line-number --no-heading --color=never --smart-case --hidden"
+						for _, pat in ipairs(ignore) do
+							opts = opts .. " -g !" .. pat .. "/**"
+						end
+						return opts
+					end)(),
+				},
+			})
 		end,
 	},
 
