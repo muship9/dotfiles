@@ -8,7 +8,7 @@ export PATH="$VOLTA_HOME/bin:$PATH"
 
 # rbenv (Ruby version manager)
 if command -v rbenv &> /dev/null; then
-  export PATH="~/.rbenv/shims:/usr/local/bin:$PATH"
+  export PATH="$HOME/.rbenv/shims:/usr/local/bin:$PATH"
   eval "$(rbenv init -)"
 fi
 

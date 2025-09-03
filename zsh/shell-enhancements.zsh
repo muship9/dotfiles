@@ -12,12 +12,15 @@ HISTSIZE=50000                   # Number of commands in memory
 SAVEHIST=50000                   # Number of commands in history file
 
 # Zsh plugins (installed via Homebrew)
-if [[ -f "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
-  source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
-fi
-
-if [[ -f "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
-  source "$(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+if command -v brew &> /dev/null; then
+  local brew_prefix
+  brew_prefix="$(brew --prefix 2>/dev/null)"
+  if [[ -f "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]]; then
+    source "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  fi
+  if [[ -f "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]]; then
+    source "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+  fi
 fi
 
 # Starship prompt
