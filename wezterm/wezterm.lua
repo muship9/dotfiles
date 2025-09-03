@@ -1,5 +1,10 @@
 local wezterm = require("wezterm")
 
+-- Obsidian vault paths
+local HOME = os.getenv("HOME")
+local OBS_VAULT = HOME .. "/Documents/Obsidian Vault"
+local OBS_DAILY = OBS_VAULT .. "/daily"
+
 -- タブタイトルを現在のディレクトリ名に設定する関数
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
 	local title = tab.active_pane.title
@@ -178,39 +183,24 @@ return {
 				end
 				
 				if content ~= "" then
-					-- 一時ファイルを作成してシェルスクリプトを実行
-					local temp_script = "/tmp/wezterm_obsidian_add.sh"
-					local daily_file = os.getenv("HOME") .. "/Documents/Obsidian Vault/daily/" .. os.date("%Y-%m-%d") .. ".md"
+					-- 正規化とパスを準備
+					content = content:gsub("\r\n", "\n"):gsub("\r", "\n")
 					local timestamp = os.date("%H:%M")
-					
-					-- シェルスクリプトを作成
-					local script_content = string.format([[#!/bin/bash
-echo "" >> "%s"
-echo "---" >> "%s"
-echo "%s" >> "%s"
-echo "%s" >> "%s"
-]], daily_file, daily_file, timestamp, daily_file, content:gsub('"', '\\"'), daily_file)
-					
-					-- 一時ファイルに書き込み
-					local file = io.open(temp_script, "w")
-					if file then
-						file:write(script_content)
-						file:close()
-						
-						-- 実行権限を付与して実行
-						os.execute("chmod +x " .. temp_script)
-						local result = os.execute(temp_script)
-						
-						-- 一時ファイルを削除
-						os.remove(temp_script)
-						
-						if result == 0 then
-							window:toast_notification("Wezterm", "Added " .. content_type .. " to daily note (" .. timestamp .. ")", nil, 3000)
-						else
-							window:toast_notification("Wezterm", "Failed to add to daily note", nil, 3000)
-						end
+					local daily_file = OBS_DAILY .. "/" .. os.date("%Y-%m-%d") .. ".md"
+
+					-- ディレクトリ作成 + まとめて追記
+					local cmd = string.format(
+						[[/bin/bash -lc 'set -e; mkdir -p %q; { echo; echo "---"; echo %q; echo %q; } >> %q']],
+						OBS_DAILY,
+						timestamp,
+						content:gsub("'", "'\\''"),
+						daily_file
+					)
+					local result = os.execute(cmd)
+					if result == 0 then
+						window:toast_notification("Wezterm", "Added " .. content_type .. " to daily note (" .. timestamp .. ")", nil, 3000)
 					else
-						window:toast_notification("Wezterm", "Failed to create temp script", nil, 3000)
+						window:toast_notification("Wezterm", "Failed to add to daily note", nil, 3000)
 					end
 				else
 					window:toast_notification("Wezterm", "No content to add", nil, 3000)
