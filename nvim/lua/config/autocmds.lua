@@ -90,12 +90,38 @@ vim.api.nvim_create_autocmd({ "BufWritePre" }, {
 vim.api.nvim_create_autocmd("VimEnter", {
   group = augroup("auto_open_tree"),
   callback = function()
-    -- Only open if no files were specified on command line
-    if vim.fn.argc() == 0 then
-      -- Defer the command to ensure Neo-tree is loaded
+    -- 環境変数で明示的に有効化された場合のみ自動オープンする
+    if vim.env.DOTFILES_AUTO_OPEN_TREE == "1" and vim.fn.argc() == 0 then
       vim.defer_fn(function()
-        vim.cmd("Neotree show")
+        pcall(vim.cmd, "Neotree show")
       end, 100)
+    end
+  end,
+})
+
+-- LazyGit 実行中は診断を一時停止して負荷を軽減
+vim.api.nvim_create_autocmd("TermOpen", {
+  group = augroup("lazygit_perf"),
+  pattern = "term://*lazygit*",
+  callback = function()
+    vim.g.__lazygit_terms = (vim.g.__lazygit_terms or 0) + 1
+    if vim.g.__lazygit_terms == 1 then
+      -- グローバルに診断を停止
+      pcall(vim.diagnostic.disable)
+    end
+  end,
+})
+
+vim.api.nvim_create_autocmd({ "TermClose", "BufWipeout" }, {
+  group = augroup("lazygit_perf_restore"),
+  pattern = "term://*lazygit*",
+  callback = function()
+    if vim.g.__lazygit_terms and vim.g.__lazygit_terms > 0 then
+      vim.g.__lazygit_terms = vim.g.__lazygit_terms - 1
+      if vim.g.__lazygit_terms == 0 then
+        -- 元に戻す
+        pcall(vim.diagnostic.enable)
+      end
     end
   end,
 })
@@ -126,6 +152,52 @@ vim.api.nvim_create_autocmd("VimEnter", {
     else
       -- Server already running, ensure NVIM env var is set
       vim.env.NVIM = vim.v.servername
+    end
+  end,
+})
+
+-- 大規模ファイルの検出と最適化
+vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
+  group = augroup("large_file_detect"),
+  callback = function(args)
+    local max_filesize = 1024 * 1024 * 2 -- 2MB
+    local ok, stats = pcall(vim.loop.fs_stat, args.file)
+    
+    if ok and stats and stats.size > max_filesize then
+      -- 大規模ファイル用の設定を適用
+      vim.b.large_file = true
+      
+      -- syntax highlightingを制限
+      vim.cmd("syntax off")
+      vim.opt_local.wrap = false
+      vim.opt_local.spell = false
+      vim.opt_local.undofile = false
+      vim.opt_local.swapfile = false
+      vim.opt_local.relativenumber = false
+      
+      -- folding を無効化
+      vim.opt_local.foldenable = false
+      
+      -- 長い行のためのsynmaxcolを設定
+      vim.opt_local.synmaxcol = 120
+      
+      vim.notify("Large file detected. Some features disabled for performance.", vim.log.levels.INFO)
+    end
+  end,
+})
+
+-- TypeScript/JavaScript ファイル用の追加設定
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("typescript_settings"),
+  pattern = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
+  callback = function(args)
+    -- 大規模ファイルの場合は診断を遅延
+    if vim.b[args.buf].large_file then
+      vim.diagnostic.config({
+        virtual_text = false,
+        update_in_insert = false,
+        underline = false,
+      }, args.buf)
     end
   end,
 })
