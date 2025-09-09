@@ -8,8 +8,30 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   group = augroup("highlight_yank"),
   callback = function()
     vim.highlight.on_yank()
-  end,
+end,
 })
+
+-- 補完デバッグ用コマンド（常時定義）
+pcall(vim.api.nvim_create_user_command, "CmpDebug", function()
+  local ok, cmp = pcall(require, "cmp")
+  if not ok then
+    print("cmp not loaded")
+    return
+  end
+  print("cmp visible: " .. tostring(cmp.visible()))
+  local enabled = true
+  local cfg = cmp.get_config()
+  if type(cfg.enabled) == "function" then
+    local ok_e, res = pcall(cfg.enabled)
+    enabled = ok_e and res or true
+  elseif cfg.enabled ~= nil then
+    enabled = cfg.enabled
+  end
+  print("cmp enabled: " .. tostring(enabled))
+  local names = {}
+  for _, s in ipairs(cfg.sources or {}) do table.insert(names, s.name) end
+  print("cmp sources: " .. table.concat(names, ", "))
+end, { desc = "Print cmp status for debugging" })
 
 -- Resize splits if window got resized
 vim.api.nvim_create_autocmd({ "VimResized" }, {

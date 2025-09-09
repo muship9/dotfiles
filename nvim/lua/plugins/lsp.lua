@@ -199,7 +199,7 @@ return {
 					local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
 					-- 診断を強制有効化し、インライン表示（virtual_text）を再設定
-					pcall(vim.diagnostic.enable, ev.buf)
+					pcall(vim.diagnostic.enable, { bufnr = ev.buf })
 					pcall(vim.diagnostic.config, {
 						virtual_text = {
 							prefix = "●",
