@@ -99,29 +99,27 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- LazyGit 実行中は診断を一時停止して負荷を軽減
+-- LazyGit ターミナルバッファのみ診断を無効化（グローバルは無効化しない）
 vim.api.nvim_create_autocmd("TermOpen", {
   group = augroup("lazygit_perf"),
   pattern = "term://*lazygit*",
-  callback = function()
-    vim.g.__lazygit_terms = (vim.g.__lazygit_terms or 0) + 1
-    if vim.g.__lazygit_terms == 1 then
-      -- グローバルに診断を停止
-      pcall(vim.diagnostic.disable)
-    end
+  callback = function(args)
+    -- ターミナルバッファに限定して診断を無効化
+    pcall(vim.diagnostic.disable, { bufnr = args.buf })
+    vim.b[args.buf].__diagnostic_was_enabled = true
+    vim.notify("LazyGit ターミナルで診断を無効化（他バッファは影響なし）", vim.log.levels.DEBUG)
   end,
 })
 
 vim.api.nvim_create_autocmd({ "TermClose", "BufWipeout" }, {
   group = augroup("lazygit_perf_restore"),
   pattern = "term://*lazygit*",
-  callback = function()
-    if vim.g.__lazygit_terms and vim.g.__lazygit_terms > 0 then
-      vim.g.__lazygit_terms = vim.g.__lazygit_terms - 1
-      if vim.g.__lazygit_terms == 0 then
-        -- 元に戻す
-        pcall(vim.diagnostic.enable)
-      end
+  callback = function(args)
+    if vim.b[args.buf] and vim.b[args.buf].__diagnostic_was_enabled then
+      -- 念のため対象バッファにのみ再度有効化（バッファ終端時なので実質不要）
+      pcall(vim.diagnostic.enable, { bufnr = args.buf })
+      vim.b[args.buf].__diagnostic_was_enabled = nil
+      vim.notify("LazyGit ターミナルの診断設定を後始末", vim.log.levels.DEBUG)
     end
   end,
 })
@@ -156,11 +154,11 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- 大規模ファイルの検出と最適化
+-- 大規模ファイルの検出と最適化（改善版）
 vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
   group = augroup("large_file_detect"),
   callback = function(args)
-    local max_filesize = 1024 * 1024 * 2 -- 2MB
+    local max_filesize = 1024 * 1024 * 8 -- 8MBに増加（TypeScript診断への影響を減らすため）
     local ok, stats = pcall(vim.loop.fs_stat, args.file)
     
     if ok and stats and stats.size > max_filesize then
@@ -181,23 +179,93 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
       -- 長い行のためのsynmaxcolを設定
       vim.opt_local.synmaxcol = 120
       
-      vim.notify("Large file detected. Some features disabled for performance.", vim.log.levels.INFO)
+      vim.notify(string.format("大規模ファイル検出 (%.1fMB). パフォーマンスのため一部機能を無効化", stats.size / (1024 * 1024)), vim.log.levels.INFO)
     end
   end,
 })
 
--- TypeScript/JavaScript ファイル用の追加設定
+-- TypeScript/JavaScript ファイル用の追加設定（安全版）
 vim.api.nvim_create_autocmd("FileType", {
   group = augroup("typescript_settings"),
   pattern = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
   callback = function(args)
-    -- 大規模ファイルの場合は診断を遅延
+    -- 診断サインの定義を確実に行う
+    pcall(vim.fn.sign_define, "DiagnosticSignError", { text = "✗", texthl = "DiagnosticSignError" })
+    pcall(vim.fn.sign_define, "DiagnosticSignWarn", { text = "⚠", texthl = "DiagnosticSignWarn" })
+    pcall(vim.fn.sign_define, "DiagnosticSignInfo", { text = "ⓘ", texthl = "DiagnosticSignInfo" })
+    pcall(vim.fn.sign_define, "DiagnosticSignHint", { text = "💡", texthl = "DiagnosticSignHint" })
+    
+    -- LSPがアタッチされるまで少し待つ
+    vim.defer_fn(function()
+      if not vim.api.nvim_buf_is_valid(args.buf) then
+        return
+      end
+    
+    -- 大規模ファイルの場合は診断を軽量化（完全無効化はしない）
     if vim.b[args.buf].large_file then
-      vim.diagnostic.config({
-        virtual_text = false,
+      local ok, err = pcall(vim.diagnostic.config, {
+        virtual_text = {
+          -- エラーと警告のみ表示
+          severity = { min = vim.diagnostic.severity.WARN },
+          prefix = "●",
+          spacing = 4,
+        },
+        signs = {
+          -- エラーと警告のみ表示
+          severity = { min = vim.diagnostic.severity.WARN },
+        },
         update_in_insert = false,
-        underline = false,
+        underline = {
+          -- エラーのみ下線表示
+          severity = { min = vim.diagnostic.severity.ERROR },
+        },
+        -- フロート表示は通常通り
+        float = {
+          focusable = true,
+          style = "minimal",
+          border = "none",
+        },
       }, args.buf)
+      
+      if not ok then
+        vim.notify("大規模ファイル用診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
+      end
+    else
+      -- 通常サイズのファイルでは完全な診断設定を適用
+      -- namespace の問題を回避するため、エラーハンドリング付きで設定
+      local ok, err = pcall(vim.diagnostic.config, {
+        virtual_text = {
+          prefix = "●",
+          spacing = 4,
+          severity = nil, -- すべてのレベルを表示
+        },
+        signs = {
+          severity = nil, -- すべてのレベルを表示  
+        },
+        update_in_insert = false,
+        underline = {
+          severity = nil, -- すべてのレベルを表示
+        },
+        severity_sort = true,
+        float = {
+          focusable = true,
+          style = "minimal",
+          border = "none",
+        },
+      }, args.buf)
+      
+      if not ok then
+        -- エラーが発生した場合はグローバル設定にフォールバック
+        vim.notify("バッファ固有の診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
+      end
+      
+      -- 診断が強制的に有効になっていることを確認
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(args.buf) then
+          pcall(vim.diagnostic.show, nil, args.buf)
+        end
+      end)
     end
+    end, 300) -- 300ms遅延してLSPアタッチを待つ
   end,
 })

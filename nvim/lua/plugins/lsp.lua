@@ -27,7 +27,8 @@ return {
 			"neovim/nvim-lspconfig",
 		},
 		config = function()
-			require("mason-lspconfig").setup({
+			local mlsp = require("mason-lspconfig")
+			mlsp.setup({
 				ensure_installed = {
 					"gopls",
 					"rust_analyzer",
@@ -36,7 +37,32 @@ return {
 					"marksman", -- Markdown LSP
 				},
 			})
-		end,
+
+			-- 自動セットアップ時に ts_ls / vtsls をスキップ（競合回避）
+			if type(mlsp.setup_handlers) == "function" then
+				mlsp.setup_handlers({
+					function(server)
+						-- 既にこのファイルで個別設定している/不要なものはスキップ
+						local skip = {
+							gopls = true,
+							rust_analyzer = true,
+							pyright = true,
+							lua_ls = true,
+							marksman = true,
+							-- TypeScript 系は typescript-tools を優先
+							vtsls = true,
+							ts_ls = true,
+							tsserver = true,
+						}
+						if skip[server] then return end
+						local ok, lspconfig = pcall(require, "lspconfig")
+						if ok and lspconfig[server] then
+							lspconfig[server].setup({})
+						end
+					end,
+				})
+			end
+			end,
 	},
 
 	-- LSP Configuration
@@ -49,6 +75,12 @@ return {
 			local util = require("lspconfig.util")
 
 			-- Setup capabilities for nvim-cmp
+			-- 念のため、vtsls/ts_ls のデフォルト自動起動を抑止
+			pcall(function()
+				if lspconfig.vtsls then lspconfig.vtsls.setup({ autostart = false }) end
+				if lspconfig.ts_ls then lspconfig.ts_ls.setup({ autostart = false }) end
+				-- tsserver は nvim-lspconfig で非推奨のため setup を呼ばない
+			end)
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
 			if has_cmp then
@@ -140,6 +172,25 @@ return {
 			})
 
 			-- Keymaps
+			-- 競合デタッチ関数（TS/JS バッファ用）
+			local function ts_detach_conflicts(bufnr)
+				for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
+					if vim.tbl_contains({ "tsserver", "ts_ls", "vtsls" }, c.name) then
+						if vim.lsp.buf_is_attached(bufnr, c.id) then
+							pcall(vim.lsp.buf_detach_client, bufnr, c.id)
+						end
+						pcall(vim.lsp.stop_client, c.id, true)
+						vim.notify(string.format("Stopped conflicting TS LSP: %s", c.name), vim.log.levels.DEBUG)
+					end
+				end
+			end
+
+			-- 手動クリーニング用コマンド
+			vim.api.nvim_create_user_command("TSDetachConflicts", function()
+				local b = vim.api.nvim_get_current_buf()
+				ts_detach_conflicts(b)
+			end, { desc = "Detach ts_ls/vtsls from current buffer" })
+
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("UserLspConfig", {}),
 				callback = function(ev)
@@ -147,14 +198,36 @@ return {
 					local opts = { buffer = ev.buf, noremap = true, silent = true }
 					local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
-					-- LSP attached silently
-					-- FzfLuaを使用したLSPキーマップ
+					-- 診断を強制有効化し、インライン表示（virtual_text）を再設定
+					pcall(vim.diagnostic.enable, ev.buf)
+					pcall(vim.diagnostic.config, {
+						virtual_text = {
+							prefix = "●",
+							spacing = 2,
+							severity = nil,
+							source = "if_many",
+						},
+					signs = { severity = nil },
+					underline = { severity = nil },
+					severity_sort = true,
+				})
 					vim.keymap.set(
 						"n",
 						"gd",
 						"<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>",
 						opts
 					)
+
+					-- TypeScript 周りの LSP 競合を回避（typescript-tools を優先）
+					local ft = vim.bo[ev.buf].filetype
+					local is_ts = vim.tbl_contains({ "typescript", "typescriptreact", "javascript", "javascriptreact" }, ft)
+					if is_ts then
+						-- いま attach したクライアントに関係なく全体をスキャンして除去
+						vim.defer_fn(function() ts_detach_conflicts(ev.buf) end, 50)
+					end
+
+					-- LSP attached silently
+					-- FzfLuaを使用したLSPキーマップ
 					vim.keymap.set(
 						"n",
 						"gr",
@@ -246,20 +319,22 @@ return {
 				hide = orig_handler.hide,
 			}
 
-			-- Diagnostic configuration
+			-- グローバル診断設定（TypeScript以外のファイル用）
+			-- TypeScript/JavaScriptファイルの診断設定はautocmds.luaで管理される
 			vim.diagnostic.config({
 				virtual_text = {
 					prefix = "●",
 					spacing = 4,
-					-- 重複するメッセージを除外
-					virt_text_hide = false,
+					severity = nil, -- すべてのレベルを表示
 				},
-				signs = true,
+				signs = {
+					severity = nil, -- すべてのレベルを表示
+				},
 				update_in_insert = false,
-				underline = true,
+				underline = {
+					severity = nil, -- すべてのレベルを表示
+				},
 				severity_sort = true,
-				-- 重複するdiagnosticsを処理
-				virtual_text_hide_severity = nil,
 				float = {
 					focusable = true,
 					style = "minimal",
@@ -359,6 +434,10 @@ return {
 				local ft = vim.bo[buf].filetype
 				print("Current filetype: " .. ft)
 				print("Current buffer: " .. buf)
+				print("Large file: " .. tostring(vim.b[buf].large_file or false))
+					-- Neovim 0.11+: is_enabled は filter テーブルを受け取る
+					print("Diagnostics enabled: " .. tostring(vim.diagnostic.is_enabled({ bufnr = buf })))
+				
 				local clients = vim.lsp.get_clients({ bufnr = buf })
 				if #clients == 0 then
 					print("No LSP clients attached to this buffer")
@@ -367,6 +446,23 @@ return {
 						print(string.format("Attached LSP: %s (id: %d)", client.name, client.id))
 					end
 				end
+				
+				-- 診断情報をチェック
+				local diagnostics = vim.diagnostic.get(buf)
+				print(string.format("Diagnostics count: %d", #diagnostics))
+				if #diagnostics > 0 then
+					print("Sample diagnostic:")
+					local diag = diagnostics[1]
+					print(string.format("  Line: %d, Severity: %d, Source: %s, Message: %s", 
+						diag.lnum + 1, diag.severity, diag.source or "unknown", diag.message))
+				end
+			end, {})
+			
+			-- 診断を強制的に表示するコマンド
+			vim.api.nvim_create_user_command("DiagnosticShow", function()
+				local buf = vim.api.nvim_get_current_buf()
+				vim.diagnostic.show(nil, buf)
+				vim.notify("診断を強制表示しました", vim.log.levels.INFO)
 			end, {})
 
 			-- LSPクライアントの全体的な設定
@@ -515,11 +611,81 @@ return {
 		dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
 		ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
 		config = function()
+			-- 起動前チェック: Node/TypeScript の検出とわかりやすい通知
+			local util = require("lspconfig.util")
+			local function find_tsserver_lib(startpath)
+				local root = util.root_pattern("package.json", "tsconfig.json", ".git")(startpath)
+				or vim.fn.getcwd()
+
+				-- プロジェクトローカル優先
+				local local_lib = root .. "/node_modules/typescript/lib/tsserverlibrary.js"
+				if vim.fn.filereadable(local_lib) == 1 then
+					return root .. "/node_modules/typescript/lib"
+				end
+
+				-- よくあるグローバルの場所も試す（Homebrew/npm グローバル）
+				local candidates = {
+					vim.fn.expand("$HOME") .. "/.npm-global/lib/node_modules/typescript/lib/tsserverlibrary.js",
+					"/usr/local/lib/node_modules/typescript/lib/tsserverlibrary.js",
+					"/opt/homebrew/lib/node_modules/typescript/lib/tsserverlibrary.js",
+				}
+				for _, p in ipairs(candidates) do
+					if vim.fn.filereadable(p) == 1 then
+						return vim.fn.fnamemodify(p, ":h")
+					end
+				end
+
+				-- VOLTA 経由のNode配下（バージョンごと）を緩く探索
+				local volta = vim.fn.expand("$VOLTA_HOME")
+				if volta ~= "" then
+					local globbed = vim.fn.glob(volta .. "/tools/image/node/*/lib/node_modules/typescript/lib/tsserverlibrary.js", true, true)
+					if #globbed > 0 then
+						return vim.fn.fnamemodify(globbed[1], ":h")
+					end
+				end
+
+				return nil
+			end
+
+			local has_node = vim.fn.executable("node") == 1
+			local bufpath = vim.api.nvim_buf_get_name(0)
+			local ts_lib = find_tsserver_lib(bufpath ~= "" and bufpath or vim.fn.getcwd())
+
+			if not has_node then
+				vim.notify("Node.js が見つからず TypeScript LSP を起動できません。\n" ..
+					"ターミナルから nvim を起動するか、PATH を見直してください。\n" ..
+					"例: volta/nodenv/asdf の初期化、または Homebrew の node をインストール", vim.log.levels.ERROR)
+				return
+			end
+
+			if not ts_lib then
+				vim.notify("TypeScript が見つからず tsserver を起動できません。\n" ..
+					"プロジェクトに TypeScript を追加してください（推奨）: npm i -D typescript\n" ..
+					"またはグローバル: npm i -g typescript\n" ..
+					"追加の候補: /usr/local や /opt/homebrew のグローバル lib を確認", vim.log.levels.ERROR)
+				-- 見つからなくても後続のインストール後で再読込すれば動くため return
+				return
+			end
+
+			-- ステータス確認用コマンド
+			vim.api.nvim_create_user_command("TSStatus", function()
+				vim.notify(("Node: %s\nTypeScript lib: %s"):format(has_node and "OK" or "NG", ts_lib or "not found"), vim.log.levels.INFO)
+			end, {})
+
 			require("typescript-tools").setup({
+				settings = {
+					-- 検出した tsserver ライブラリパスを優先使用
+					tsserver_path = ts_lib,
+				},
 				on_attach = function(client, bufnr)
 					-- Disable formatting if you use prettier or another formatter
 					client.server_capabilities.documentFormattingProvider = false
 					client.server_capabilities.documentRangeFormattingProvider = false
+
+					-- 診断設定を統一（すべてのTypeScriptファイルに適用）
+					-- autocmds.luaで設定されるため、ここでは重複設定を避ける
+					-- 通知のみ行う
+					vim.notify(string.format("TypeScript LSP attached to buffer %d", bufnr), vim.log.levels.DEBUG)
 
 					-- Buffer local mappings (similar to existing LSP mappings)
 					local opts = { buffer = bufnr, noremap = true, silent = true }
@@ -580,7 +746,7 @@ return {
 					-- Enable completion triggered by <c-x><c-o>
 					vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
 				end,
-				settings = {
+				settings = vim.tbl_deep_extend("force", {
 					-- メモリ制限設定 (4GB - V8の実質的な上限)
 					tsserver_max_memory = 4096,
 					
@@ -610,7 +776,7 @@ return {
 						enable = true,
 						filetypes = { "javascriptreact", "typescriptreact" },
 					},
-				},
+				}, settings or {}),
 			})
 		end,
 	},
