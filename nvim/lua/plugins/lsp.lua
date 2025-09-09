@@ -428,6 +428,17 @@ return {
 				end
 			end, {})
 
+			-- Log when LSP detaches (to trace unexpected stops)
+			vim.api.nvim_create_autocmd("LspDetach", {
+				group = vim.api.nvim_create_augroup("UserLspDebugDetach", { clear = true }),
+				callback = function(ev)
+					local client = vim.lsp.get_client_by_id(ev.data.client_id)
+					if client then
+						vim.notify(string.format("LSP detached: %s (buf=%d)", client.name, ev.buf), vim.log.levels.WARN)
+					end
+				end,
+			})
+
 			-- Create a command to show current filetype and debug info
 			vim.api.nvim_create_user_command("LspDebug", function()
 				local buf = vim.api.nvim_get_current_buf()
@@ -795,6 +806,21 @@ return {
 		config = function()
 			local cmp = require("cmp")
 			local luasnip = require("luasnip")
+
+			-- Helper: quick debug command to check cmp status
+			pcall(vim.api.nvim_create_user_command, "CmpDebug", function()
+				local ok, core = pcall(function()
+					return require("cmp").core
+				end)
+				print("cmp loaded: " .. tostring(ok))
+				print("cmp visible: " .. tostring(cmp.visible()))
+				print("cmp enabled: " .. tostring(cmp.get_config().enabled ~= false))
+				local sources = {}
+				for _, s in ipairs(cmp.get_config().sources or {}) do
+					table.insert(sources, s.name)
+				end
+				print("cmp sources: " .. table.concat(sources, ", "))
+			end, {})
 
 			cmp.setup({
 				snippet = {
