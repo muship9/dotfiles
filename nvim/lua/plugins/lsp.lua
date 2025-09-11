@@ -428,16 +428,18 @@ return {
 				end
 			end, {})
 
-			-- Log when LSP detaches (to trace unexpected stops)
-			vim.api.nvim_create_autocmd("LspDetach", {
-				group = vim.api.nvim_create_augroup("UserLspDebugDetach", { clear = true }),
-				callback = function(ev)
-					local client = vim.lsp.get_client_by_id(ev.data.client_id)
-					if client then
-						vim.notify(string.format("LSP detached: %s (buf=%d)", client.name, ev.buf), vim.log.levels.WARN)
-					end
-				end,
-			})
+			-- Optional LSP detach logging (enable with DOTFILES_LSP_DEBUG=1)
+			if vim.env.DOTFILES_LSP_DEBUG == "1" then
+				vim.api.nvim_create_autocmd("LspDetach", {
+					group = vim.api.nvim_create_augroup("UserLspDebugDetach", { clear = true }),
+					callback = function(ev)
+						local client = vim.lsp.get_client_by_id(ev.data.client_id)
+						if client then
+							vim.notify(string.format("LSP detached: %s (buf=%d)", client.name, ev.buf), vim.log.levels.DEBUG)
+						end
+					end,
+				})
+			end
 
 			-- Create a command to show current filetype and debug info
 			vim.api.nvim_create_user_command("LspDebug", function()
