@@ -91,24 +91,24 @@ return {
 		config = function()
 			local telescope = require("telescope")
 			local has_fd = vim.fn.executable("fd") == 1
-            local ignore = {
-                "node_modules",
-                ".git",
-                "dist",
-                "build",
-                "target",
-                ".venv",
-                ".tox",
-                ".idea",
-                ".next",
-                ".cache",
-                "coverage",
-                "vendor",
-                ".pnpm-store",
-                ".yarn/cache",
-                ".terraform",
-                "Pods",
-            }
+			local ignore = {
+				"node_modules",
+				".git",
+				"dist",
+				"build",
+				"target",
+				".venv",
+				".tox",
+				".idea",
+				".next",
+				".cache",
+				"coverage",
+				"vendor",
+				".pnpm-store",
+				".yarn/cache",
+				".terraform",
+				"Pods",
+			}
 			-- Build commands for find_files depending on availability
 			local find_cmd
 			if has_fd then
@@ -176,10 +176,24 @@ return {
 		"ibhagwan/fzf-lua",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
-        local ignore = {
-            ".git", "node_modules", "dist", "build", "target", ".venv", ".tox", ".idea", ".next", ".cache", "coverage",
-            "vendor", ".pnpm-store", ".yarn/cache", ".terraform", "Pods",
-        }
+			local ignore = {
+				".git",
+				"node_modules",
+				"dist",
+				"build",
+				"target",
+				".venv",
+				".tox",
+				".idea",
+				".next",
+				".cache",
+				"coverage",
+				"vendor",
+				".pnpm-store",
+				".yarn/cache",
+				".terraform",
+				"Pods",
+			}
 			require("fzf-lua").setup({
 				files = {
 					fd_opts = (function()
@@ -260,6 +274,25 @@ return {
 					border = "curved",
 				},
 			})
+		end,
+	},
+
+	-- Git blame inline
+	{
+		"APZelos/blamer.nvim",
+		event = { "BufReadPre", "BufNewFile" },
+		keys = {
+			{ "<leader>gb", "<cmd>BlamerToggle<cr>", desc = "Toggle git blame" },
+		},
+		config = function()
+			vim.g.blamer_enabled = 1
+			vim.g.blamer_delay = 200
+			vim.g.blamer_show_in_visual_modes = 0
+			vim.g.blamer_show_in_insert_modes = 0
+			vim.g.blamer_prefix = " "
+			vim.g.blamer_template = "<committer>, <committer-time> • <summary>"
+			vim.g.blamer_date_format = "%Y/%m/%d"
+			vim.g.blamer_relative_time = 1
 		end,
 	},
 }

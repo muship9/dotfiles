@@ -197,76 +197,8 @@ end, { desc = "Gitルートからの相対パスをコピー" })
 keymap("n", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })
 keymap("v", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })
 
--- Git blame for current line
-keymap("n", "<leader>gb", function()
-  local file_path = vim.fn.expand("%:p")
-  if file_path == "" then
-    print("No file in buffer")
-    return
-  end
-  
-  local line = vim.fn.line(".")
-  local blame_cmd = string.format("git blame -L %d,%d --date=relative %s", line, line, vim.fn.shellescape(file_path))
-  local blame_output = vim.fn.systemlist(blame_cmd)
-  
-  if vim.v.shell_error ~= 0 then
-    print("Git blame failed")
-    return
-  end
-  
-  if #blame_output > 0 then
-    -- Parse the blame output
-    local blame_line = blame_output[1]
-    local commit, author, date = blame_line:match("^(%S+)%s+%((.-)%s+(%S+%s+%S+)")
-    
-    if commit and author and date then
-      -- Get commit message
-      local msg_cmd = string.format("git log -1 --pretty=format:%%s %s", commit)
-      local commit_msg = vim.fn.systemlist(msg_cmd)[1] or "No commit message"
-      
-      -- Show in a floating window
-      local buf = vim.api.nvim_create_buf(false, true)
-      local content = {
-        string.format("Commit: %s", commit:sub(1, 8)),
-        string.format("Message: %s", commit_msg),
-        string.format("Author: %s", author),
-        string.format("Date: %s", date),
-      }
-      
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
-      
-      -- Calculate width based on content
-      local width = 0
-      for _, line in ipairs(content) do
-        width = math.max(width, #line)
-      end
-      width = math.min(width + 2, 80) -- Max width 80
-      
-      local height = #content
-      local win = vim.api.nvim_open_win(buf, false, {
-        relative = "cursor",
-        row = 1,
-        col = 0,
-        width = width,
-        height = height,
-        style = "minimal",
-        border = "rounded",
-      })
-      
-      -- Auto close on cursor move
-      vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-        once = true,
-        callback = function()
-          if vim.api.nvim_win_is_valid(win) then
-            vim.api.nvim_win_close(win, true)
-          end
-        end,
-      })
-    else
-      print("Failed to parse git blame output")
-    end
-  end
-end, { desc = "現在行のGit blame表示" })
+-- Git blame toggle is handled by blamer.nvim plugin
+-- Use <leader>gb to toggle inline git blame display
 
 -- Open current file in GitHub
 keymap("n", "<leader>gB", function()
