@@ -64,6 +64,3 @@ vim.g.maplocalleader = " "
 if vim.env.DOTFILES_SILENCE_DEPRECATIONS == "1" then
   vim.deprecate = function() end
 end
-
--- Neovim server setup for neovim-remote (nvr) is handled in autocmds.lua
--- This ensures consistent server management

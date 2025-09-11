@@ -12,11 +12,9 @@
 - **Obsidian** (ノート管理)
 
 ### 推奨
-- **neovim-remote** (LazyGit連携用)
 - **ripgrep** (高速検索用)
 - **fd** (高速ファイル検索用)
 - **starship** (プロンプトカスタマイズ)
-- **LazyGit** (Git UI)
 - **WezTerm** (ターミナルエミュレータ)
 
 ## インストール手順
@@ -31,8 +29,7 @@
 brew install neovim git node
 
 # 推奨ツール
-brew install ripgrep fd starship lazygit wezterm
-pip3 install neovim-remote
+brew install ripgrep fd starship wezterm
 
 # Obsidianを手動でインストール
 # https://obsidian.md/
@@ -69,7 +66,6 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 - **プラグイン管理**: lazy.nvim
 - **LSP**: 各言語のLanguage Server Protocol対応
 - **ファイル探索**: Neo-tree, Telescope, fzf-lua
-- **Git連携**: LazyGit (neovim-remote使用)
 - **自動補完**: nvim-cmp
 - **シンタックスハイライト**: Treesitter
 - **Obsidian連携**: obsidian.nvim (Markdownノート管理)
@@ -81,7 +77,6 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 - `<leader>e` - Neo-tree toggle
 - `<leader><leader>` - ファイル検索
 - `<leader>/` - プロジェクト内検索
-- `<leader>gg` - LazyGit
 - `<leader>w` - バッファを閉じる
 - `<leader>cp` - 相対パスをコピー
 
@@ -135,32 +130,7 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 - 選択したコードやテキストのデイリーノートへの追加
 - Obsidianアプリとの連携
 
-## LazyGit連携
-
-LazyGit内でファイルを編集する際、現在のNeovimインスタンスで開くように設定済み。
-
-- LazyGit内で `e` キーを押すとNeovimの新しいタブでファイルが開く
-- コミットメッセージもNeovim内で編集可能
-
 ## トラブルシューティング
-
-### LazyGitでファイルが正しく開かない場合
-
-1. neovim-remoteがインストールされているか確認
-```bash
-which nvr
-```
-
-2. Neovimのサーバー名が設定されているか確認
-```vim
-:echo v:servername
-:echo $NVIM
-```
-
-3. 新しいシェルセッションを開いて設定を反映
-```bash
-source ~/.zshrc
-```
 
 ### LSPが動作しない場合
 
