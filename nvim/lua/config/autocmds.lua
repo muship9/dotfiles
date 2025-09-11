@@ -247,14 +247,13 @@ vim.api.nvim_create_autocmd("FileType", {
           style = "minimal",
           border = "none",
         },
-      }, args.buf)
+      })
       
       if not ok then
         vim.notify("大規模ファイル用診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
       end
     else
       -- 通常サイズのファイルでは完全な診断設定を適用
-      -- namespace の問題を回避するため、エラーハンドリング付きで設定
       local ok, err = pcall(vim.diagnostic.config, {
         virtual_text = {
           prefix = "●",
@@ -274,11 +273,10 @@ vim.api.nvim_create_autocmd("FileType", {
           style = "minimal",
           border = "none",
         },
-      }, args.buf)
+      })
       
       if not ok then
-        -- エラーが発生した場合はグローバル設定にフォールバック
-        vim.notify("バッファ固有の診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
+        vim.notify("診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
       end
       
       -- 診断が強制的に有効になっていることを確認
