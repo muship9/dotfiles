@@ -760,8 +760,8 @@ return {
 					vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
 				end,
 				settings = vim.tbl_deep_extend("force", {
-					-- メモリ制限設定 (4GB - V8の実質的な上限)
-					tsserver_max_memory = 4096,
+					-- メモリ制限設定 (8GB - 大規模プロジェクト対応)
+					tsserver_max_memory = 8192,
 					
 					-- 診断用に別のtsserverインスタンスを使用（メモリ圧迫を軽減）
 					separate_diagnostic_server = true,
@@ -774,6 +774,10 @@ return {
 						-- 大規模ファイル用のパフォーマンス設定
 						disableSuggestions = false,
 						useLabelDetailsInCompletionEntries = true,
+						-- 補完のタイムアウトを延長
+						includeCompletionsWithInsertText = true,
+						includeCompletionsWithSnippetText = true,
+						includeAutomaticOptionalChainCompletions = true,
 					},
 					tsserver_format_options = {
 						allowIncompleteCompletions = false,
@@ -873,7 +877,7 @@ return {
 				performance = {
 					debounce = 60,
 					throttle = 30,
-					fetching_timeout = 500,
+					fetching_timeout = 2000, -- TypeScriptの複雑な型推論に対応
 					confirm_resolve_timeout = 80,
 					async_budget = 1,
 					max_view_entries = 50,
