@@ -72,7 +72,7 @@ return {
 			action = wezterm.action.SplitHorizontal({ domain = "CurrentPaneDomain" }),
 		},
 		{
-			key = "-",
+			key = "`",
 			mods = "CMD",
 			action = wezterm.action.SplitVertical({ domain = "CurrentPaneDomain" }),
 		},
@@ -124,7 +124,7 @@ return {
 		},
 		{
 			key = "-",
-			mods = "CMD|SHIFT",
+			mods = "CMD",
 			action = wezterm.action.DecreaseFontSize,
 		},
 		-- Workspace関連のキーバインド
