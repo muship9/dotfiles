@@ -30,6 +30,13 @@ fi
 
 # fzf key bindings and completion
 if command -v fzf &> /dev/null; then
+  # Expand the fzf window for history search and keep long commands visible.
+  if [[ -z ${FZF_TMUX_HEIGHT-} ]]; then
+    export FZF_TMUX_HEIGHT=80%
+  fi
+  if [[ -z ${FZF_CTRL_R_OPTS-} ]]; then
+    export FZF_CTRL_R_OPTS="--preview 'echo {}' --preview-window=down:55%:wrap"
+  fi
   source <(fzf --zsh)
   
   # Custom fzf history widget that handles multiline commands

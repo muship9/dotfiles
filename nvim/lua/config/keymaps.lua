@@ -193,6 +193,29 @@ keymap("n", "<leader>cp", function()
   print("Copied: " .. relative_path)
 end, { desc = "Gitルートからの相対パスをコピー" })
 
+keymap("n", "<leader>pm", function()
+  local file_path = vim.api.nvim_buf_get_name(0)
+  if file_path == "" then
+    vim.notify("ファイルが保存されていません", vim.log.levels.WARN)
+    return
+  end
+
+  if vim.fn.filereadable(file_path) == 0 then
+    vim.notify("ファイルを読み込めません: " .. file_path, vim.log.levels.ERROR)
+    return
+  end
+
+  if vim.fn.expand("%:e") ~= "md" then
+    vim.notify("Markdown ファイルではありません", vim.log.levels.WARN)
+    return
+  end
+
+  local job = vim.fn.jobstart({ "open", "-a", "Vivaldi", file_path }, { detach = true })
+  if job <= 0 then
+    vim.notify("Vivaldi を起動できませんでした", vim.log.levels.ERROR)
+  end
+end, { desc = "Vivaldi で Markdown をプレビュー" })
+
 -- Jump to matching tag/bracket
 keymap("n", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })
 keymap("v", "gt", "%", { desc = "対応するタグ・括弧へジャンプ" })

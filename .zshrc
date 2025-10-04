@@ -36,3 +36,6 @@ done
 
 # Load work-specific configuration
 [[ -s "$DOTFILES_DIR/zsh/work.zsh" ]] && source "$DOTFILES_DIR/zsh/work.zsh"
+
+# Created by `pipx` on 2025-10-01 08:22:47
+export PATH="$PATH:/Users/shinpeimukaiyama/.local/bin"
