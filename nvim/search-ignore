@@ -1,0 +1,21 @@
+# Add directories (suffix with /) or files/globs to exclude from fuzzy finder search.
+# Lines starting with # or empty lines are ignored. Wildcards like *.pb work.
+node_modules/
+.git/
+dist/
+build/
+target/
+.venv/
+.tox/
+.idea/
+.next/
+.cache/
+coverage/
+vendor/
+.pnpm-store/
+.yarn/cache/
+.terraform/
+Pods/
+
+# Proto 周りの自動生成ファイル
+*pb*

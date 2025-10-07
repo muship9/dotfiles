@@ -92,39 +92,18 @@ return {
 		},
 		config = function()
 			local telescope = require("telescope")
+			local search_ignore = require("config.search_ignore")
+			local ignore_entries = search_ignore.entries()
+			local ignore_patterns = search_ignore.patterns(ignore_entries)
 			local has_fd = vim.fn.executable("fd") == 1
-			local ignore = {
-				"node_modules",
-				".git",
-				"dist",
-				"build",
-				"target",
-				".venv",
-				".tox",
-				".idea",
-				".next",
-				".cache",
-				"coverage",
-				"vendor",
-				".pnpm-store",
-				".yarn/cache",
-				".terraform",
-				"Pods",
-			}
 			-- Build commands for find_files depending on availability
 			local find_cmd
 			if has_fd then
 				find_cmd = { "fd", "--type", "f", "--color", "never", "--hidden", "--strip-cwd-prefix" }
-				for _, pat in ipairs(ignore) do
-					table.insert(find_cmd, "--exclude")
-					table.insert(find_cmd, pat)
-				end
+				vim.list_extend(find_cmd, search_ignore.fd_exclude_args(ignore_entries))
 			else
 				find_cmd = { "rg", "--files", "--hidden", "--follow" }
-				for _, pat in ipairs(ignore) do
-					table.insert(find_cmd, "-g")
-					table.insert(find_cmd, "!" .. pat .. "/**")
-				end
+				vim.list_extend(find_cmd, search_ignore.rg_ignore_globs(ignore_entries))
 			end
 
 			telescope.setup({
@@ -135,7 +114,7 @@ return {
 							["<C-d>"] = false,
 						},
 					},
-					file_ignore_patterns = ignore,
+					file_ignore_patterns = ignore_patterns,
 					vimgrep_arguments = (function()
 						local args = {
 							"rg",
@@ -147,10 +126,7 @@ return {
 							"--smart-case",
 							"--hidden",
 						}
-						for _, pat in ipairs(ignore) do
-							table.insert(args, "-g")
-							table.insert(args, "!" .. pat .. "/**")
-						end
+						vim.list_extend(args, search_ignore.rg_ignore_globs(ignore_entries))
 						return args
 					end)(),
 				},
@@ -161,10 +137,7 @@ return {
 					live_grep = {
 						additional_args = function()
 							local args = { "--hidden" }
-							for _, pat in ipairs(ignore) do
-								table.insert(args, "-g")
-								table.insert(args, "!" .. pat .. "/**")
-							end
+							vim.list_extend(args, search_ignore.rg_ignore_globs(ignore_entries))
 							return args
 						end,
 					},
@@ -178,37 +151,22 @@ return {
 		"ibhagwan/fzf-lua",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
-			local ignore = {
-				".git",
-				"node_modules",
-				"dist",
-				"build",
-				"target",
-				".venv",
-				".tox",
-				".idea",
-				".next",
-				".cache",
-				"coverage",
-				"vendor",
-				".pnpm-store",
-				".yarn/cache",
-				".terraform",
-				"Pods",
-			}
+			local search_ignore = require("config.search_ignore")
+			local ignore_entries = search_ignore.entries()
 			require("fzf-lua").setup({
 				files = {
 					fd_opts = (function()
 						local opts = "--color=never --type f --hidden --follow"
-						for _, pat in ipairs(ignore) do
-							opts = opts .. " --exclude " .. pat
+						for _, entry in ipairs(ignore_entries) do
+							opts = opts .. " --exclude " .. entry.pattern
 						end
 						return opts
 					end)(),
 					rg_opts = (function()
 						local opts = "--color=never --files --hidden --follow"
-						for _, pat in ipairs(ignore) do
-							opts = opts .. " -g !" .. pat .. "/**"
+						for _, entry in ipairs(ignore_entries) do
+							local suffix = entry.is_dir and "/**" or ""
+							opts = opts .. " -g !" .. entry.pattern .. suffix
 						end
 						return opts
 					end)(),
@@ -216,8 +174,9 @@ return {
 				grep = {
 					rg_opts = (function()
 						local opts = "--column --line-number --no-heading --color=never --smart-case --hidden"
-						for _, pat in ipairs(ignore) do
-							opts = opts .. " -g !" .. pat .. "/**"
+						for _, entry in ipairs(ignore_entries) do
+							local suffix = entry.is_dir and "/**" or ""
+							opts = opts .. " -g !" .. entry.pattern .. suffix
 						end
 						return opts
 					end)(),
