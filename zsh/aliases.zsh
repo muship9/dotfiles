@@ -17,7 +17,7 @@ alias gf='git fetch'
 alias gs='git switch'
 # 新規ブランチを作成して切り替え
 alias gsc='git switch -c'
-alias gch='git checkout'
+alias gch='git checkout .'
 alias gd='git diff'
 
 # Directory navigation aliases

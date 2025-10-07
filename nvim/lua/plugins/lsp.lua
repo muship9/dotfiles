@@ -173,9 +173,11 @@ return {
 
 			-- Keymaps
 			-- 競合デタッチ関数（TS/JS バッファ用）
+			-- 注意: typescript-tools.nvim のクライアント名は多くの環境で "tsserver" になる。
+			-- ここで "tsserver" を止めると本命の LSP を自殺させるため、除外する。
 			local function ts_detach_conflicts(bufnr)
 				for _, c in ipairs(vim.lsp.get_clients({ bufnr = bufnr })) do
-					if vim.tbl_contains({ "tsserver", "ts_ls", "vtsls" }, c.name) then
+					if vim.tbl_contains({ "ts_ls", "vtsls" }, c.name) then
 						if vim.lsp.buf_is_attached(bufnr, c.id) then
 							pcall(vim.lsp.buf_detach_client, bufnr, c.id)
 						end
@@ -190,6 +192,25 @@ return {
 				local b = vim.api.nvim_get_current_buf()
 				ts_detach_conflicts(b)
 			end, { desc = "Detach ts_ls/vtsls from current buffer" })
+
+			-- TypeScript Tools を安全に再起動するユーティリティ
+			-- lspconfig の :LspRestart は typescript-tools には使えないため自前実装
+			vim.api.nvim_create_user_command("TSRestart", function()
+				local buf = vim.api.nvim_get_current_buf()
+				-- ts_tools の可能性があるクライアント名を対象に停止
+				for _, c in ipairs(vim.lsp.get_clients({ bufnr = buf })) do
+					if vim.tbl_contains({ "tsserver", "typescript-tools" }, c.name) then
+						pcall(vim.lsp.stop_client, c.id, true)
+						vim.notify(string.format("Restarting TypeScript LSP (stopped %s)", c.name), vim.log.levels.INFO)
+					end
+				end
+				-- 再アタッチを促す
+				vim.defer_fn(function()
+					if vim.api.nvim_buf_is_valid(buf) then
+						pcall(vim.cmd, "edit")
+					end
+				end, 50)
+			end, { desc = "Restart TypeScript LSP from current buffer" })
 
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("UserLspConfig", {}),

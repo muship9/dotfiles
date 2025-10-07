@@ -13,3 +13,5 @@ change-env.sh
 
 oxford.dump*
 **/.claude/settings.local.json
+
+**/.claude/settings.local.json

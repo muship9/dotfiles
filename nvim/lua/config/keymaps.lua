@@ -52,63 +52,8 @@ keymap("n", "<leader>wb", "<C-W>s", { desc = "水平分割（下）" })
 keymap("n", "<leader>wl", "<C-W>v", { desc = "垂直分割（右）" })
 
 -- Buffers
-keymap("n", "<S-h>", function()
-  -- バッファリストを取得
-  local buffers = vim.fn.getbufinfo({ buflisted = 1 })
-  if #buffers <= 1 then
-    return
-  end
-  
-  -- 現在のバッファ番号を取得
-  local current = vim.api.nvim_get_current_buf()
-  local current_index = nil
-  
-  -- 現在のバッファのインデックスを見つける
-  for i, buf in ipairs(buffers) do
-    if buf.bufnr == current then
-      current_index = i
-      break
-    end
-  end
-  
-  if current_index then
-    -- 前のバッファに移動（ループする）
-    local prev_index = current_index - 1
-    if prev_index < 1 then
-      prev_index = #buffers
-    end
-    vim.api.nvim_set_current_buf(buffers[prev_index].bufnr)
-  end
-end, { desc = "左のバッファへ移動" })
-
-keymap("n", "<S-l>", function()
-  -- バッファリストを取得
-  local buffers = vim.fn.getbufinfo({ buflisted = 1 })
-  if #buffers <= 1 then
-    return
-  end
-  
-  -- 現在のバッファ番号を取得
-  local current = vim.api.nvim_get_current_buf()
-  local current_index = nil
-  
-  -- 現在のバッファのインデックスを見つける
-  for i, buf in ipairs(buffers) do
-    if buf.bufnr == current then
-      current_index = i
-      break
-    end
-  end
-  
-  if current_index then
-    -- 次のバッファに移動（ループする）
-    local next_index = current_index + 1
-    if next_index > #buffers then
-      next_index = 1
-    end
-    vim.api.nvim_set_current_buf(buffers[next_index].bufnr)
-  end
-end, { desc = "右のバッファへ移動" })
+keymap("n", "<S-h>", "<cmd>BufferLineCyclePrev<cr>", { desc = "左のタブへ移動" })
+keymap("n", "<S-l>", "<cmd>BufferLineCycleNext<cr>", { desc = "右のタブへ移動" })
 keymap("n", "[b", "<cmd>bprevious<cr>", { desc = "前のバッファ" })
 keymap("n", "]b", "<cmd>bnext<cr>", { desc = "次のバッファ" })
 keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
