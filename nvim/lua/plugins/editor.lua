@@ -168,6 +168,13 @@ return {
 			local search_ignore = require("config.search_ignore")
 			local ignore_entries = search_ignore.entries()
 			require("fzf-lua").setup({
+				winopts = {
+					split = "belowright new", -- 分割する場合は下に
+				},
+				lsp = {
+					jump_to_single_result = true, -- 結果が1つの場合は自動ジャンプ
+					ignore_current_line = true,
+				},
 				files = {
 					fd_opts = (function()
 						local opts = "--color=never --type f --hidden --follow"

@@ -60,8 +60,17 @@ keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切�
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
 keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local win_count = vim.fn.winnr('$')
+
+  -- ウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
+  if win_count > 1 then
+    vim.cmd("close")
+    return
+  end
+
+  -- ウィンドウが1つの場合は、バッファを切り替えてから削除
   local alternate_buf = vim.fn.bufnr("#")
-  
+
   -- Check if alternate buffer is valid and listed
   if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
     -- Switch to alternate buffer (previously active file)
@@ -69,20 +78,20 @@ keymap("n", "<leader>w", function()
   else
     -- Fallback: try to switch to the next buffer first
     vim.cmd("bnext")
-    
+
     -- If we're still on the same buffer (meaning there was no next buffer),
     -- try the previous buffer
     if vim.api.nvim_get_current_buf() == current_buf then
       vim.cmd("bprevious")
     end
   end
-  
+
   -- Now delete the original buffer
   -- Use pcall to handle cases where buffer deletion might fail
   local success, err = pcall(function()
     vim.cmd("bdelete " .. current_buf)
   end)
-  
+
   if not success then
     print("Failed to delete buffer: " .. err)
   end
@@ -91,8 +100,17 @@ end, { desc = "バッファを削除（スマート）" })
 -- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
 keymap("n", "<C-S-w>", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local win_count = vim.fn.winnr('$')
+
+  -- ウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
+  if win_count > 1 then
+    vim.cmd("close")
+    return
+  end
+
+  -- ウィンドウが1つの場合は、バッファを切り替えてから削除
   local alternate_buf = vim.fn.bufnr("#")
-  
+
   -- Check if alternate buffer is valid and listed
   if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
     -- Switch to alternate buffer (previously active file)
@@ -100,20 +118,20 @@ keymap("n", "<C-S-w>", function()
   else
     -- Fallback: try to switch to the next buffer first
     vim.cmd("bnext")
-    
+
     -- If we're still on the same buffer (meaning there was no next buffer),
     -- try the previous buffer
     if vim.api.nvim_get_current_buf() == current_buf then
       vim.cmd("bprevious")
     end
   end
-  
+
   -- Now delete the original buffer
   -- Use pcall to handle cases where buffer deletion might fail
   local success, err = pcall(function()
     vim.cmd("bdelete " .. current_buf)
   end)
-  
+
   if not success then
     print("Failed to delete buffer: " .. err)
   end

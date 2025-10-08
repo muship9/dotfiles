@@ -55,9 +55,10 @@ return {
 							tsserver = true,
 						}
 						if skip[server] then return end
-						local ok, lspconfig = pcall(require, "lspconfig")
-						if ok and lspconfig[server] then
-							lspconfig[server].setup({})
+
+						-- vim.lsp.config を使用 (Neovim 0.11+)
+						if vim.lsp.config and vim.lsp.config[server] then
+							vim.lsp.enable(server)
 						end
 					end,
 				})
@@ -70,16 +71,18 @@ return {
 		"neovim/nvim-lspconfig",
 		event = { "BufReadPre", "BufNewFile" },
 		config = function()
-			-- 既存の設定をそのまま維持...
-			local lspconfig = require("lspconfig")
+			-- lspconfig.util は引き続き使用可能
 			local util = require("lspconfig.util")
 
 			-- Setup capabilities for nvim-cmp
 			-- 念のため、vtsls/ts_ls のデフォルト自動起動を抑止
 			pcall(function()
-				if lspconfig.vtsls then lspconfig.vtsls.setup({ autostart = false }) end
-				if lspconfig.ts_ls then lspconfig.ts_ls.setup({ autostart = false }) end
-				-- tsserver は nvim-lspconfig で非推奨のため setup を呼ばない
+				if vim.lsp.config.vtsls then
+					vim.lsp.config.vtsls = vim.tbl_extend("force", vim.lsp.config.vtsls, { autostart = false })
+				end
+				if vim.lsp.config.ts_ls then
+					vim.lsp.config.ts_ls = vim.tbl_extend("force", vim.lsp.config.ts_ls, { autostart = false })
+				end
 			end)
 			local capabilities = vim.lsp.protocol.make_client_capabilities()
 			local has_cmp, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
@@ -95,7 +98,7 @@ return {
 			end
 
 			-- Go
-			lspconfig.gopls.setup({
+			vim.lsp.config.gopls = {
 				capabilities = capabilities,
 				root_dir = get_project_root({ "go.mod", ".git" }),
 				settings = {
@@ -107,10 +110,11 @@ return {
 						gofumpt = true,
 					},
 				},
-			})
+			}
+			vim.lsp.enable('gopls')
 
 			-- Rust
-			lspconfig.rust_analyzer.setup({
+			vim.lsp.config.rust_analyzer = {
 				capabilities = capabilities,
 				root_dir = get_project_root({ "Cargo.toml", ".git" }),
 				settings = {
@@ -124,16 +128,18 @@ return {
 						},
 					},
 				},
-			})
+			}
+			vim.lsp.enable('rust_analyzer')
 
 			-- Python
-			lspconfig.pyright.setup({
+			vim.lsp.config.pyright = {
 				capabilities = capabilities,
 				root_dir = get_project_root({ "setup.py", "setup.cfg", "pyproject.toml", "requirements.txt", ".git" }),
-			})
+			}
+			vim.lsp.enable('pyright')
 
 			-- Lua
-			lspconfig.lua_ls.setup({
+			vim.lsp.config.lua_ls = {
 				capabilities = capabilities,
 				root_dir = get_project_root({
 					".luarc.json",
@@ -162,14 +168,16 @@ return {
 						},
 					},
 				},
-			})
+			}
+			vim.lsp.enable('lua_ls')
 
 			-- Markdown
-			lspconfig.marksman.setup({
+			vim.lsp.config.marksman = {
 				capabilities = capabilities,
 				root_dir = get_project_root({ ".git", ".marksman.toml" }),
 				filetypes = { "markdown", "markdown.mdx" },
-			})
+			}
+			vim.lsp.enable('marksman')
 
 			-- Keymaps
 			-- 競合デタッチ関数（TS/JS バッファ用）
@@ -235,7 +243,7 @@ return {
 					vim.keymap.set(
 						"n",
 						"gd",
-						"<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>",
+						vim.lsp.buf.definition,
 						opts
 					)
 
@@ -252,16 +260,16 @@ return {
 					vim.keymap.set(
 						"n",
 						"gr",
-						"<cmd>FzfLua lsp_references jump1=true ignore_current_line=true<cr>",
+						"<cmd>FzfLua lsp_references jump_to_single_result=true ignore_current_line=true<cr>",
 						opts
 					)
 					vim.keymap.set(
 						"n",
 						"gi",
-						"<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>",
+						"<cmd>FzfLua lsp_implementations jump_to_single_result=true ignore_current_line=true<cr>",
 						opts
 					)
-					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump_to_single_result=true ignore_current_line=true<cr>", opts)
 
 					-- 通常のLSPキーマップ
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
@@ -646,7 +654,10 @@ return {
 		ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
 		config = function()
 			-- 起動前チェック: Node/TypeScript の検出とわかりやすい通知
-			local util = require("lspconfig.util")
+			local has_lspconfig, util = pcall(require, "lspconfig.util")
+			if not has_lspconfig then
+				util = vim.lsp.util -- フォールバック
+			end
 			local function find_tsserver_lib(startpath)
 				local root = util.root_pattern("package.json", "tsconfig.json", ".git")(startpath)
 				or vim.fn.getcwd()
@@ -728,22 +739,22 @@ return {
 					vim.keymap.set(
 						"n",
 						"gd",
-						"<cmd>FzfLua lsp_definitions jump1=true ignore_current_line=true<cr>",
+						vim.lsp.buf.definition,
 						opts
 					)
 					vim.keymap.set(
 						"n",
 						"gr",
-						"<cmd>FzfLua lsp_references jump1=true ignore_current_line=true<cr>",
+						"<cmd>FzfLua lsp_references jump_to_single_result=true ignore_current_line=true<cr>",
 						opts
 					)
 					vim.keymap.set(
 						"n",
 						"gi",
-						"<cmd>FzfLua lsp_implementations jump1=true ignore_current_line=true<cr>",
+						"<cmd>FzfLua lsp_implementations jump_to_single_result=true ignore_current_line=true<cr>",
 						opts
 					)
-					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump1=true ignore_current_line=true<cr>", opts)
+					vim.keymap.set("n", "gy", "<cmd>FzfLua lsp_typedefs jump_to_single_result=true ignore_current_line=true<cr>", opts)
 
 					-- Standard LSP mappings
 					vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
