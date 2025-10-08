@@ -44,6 +44,18 @@ return {
 
 	-- key bindings
 	keys = {
+		-- 検索モード
+		{
+			key = "f",
+			mods = "CMD|SHIFT",
+			action = wezterm.action.Search({ CaseSensitiveString = "" }),
+		},
+		-- QuickSelect モード (URL、パス、ハッシュなどを素早く選択)
+		{
+			key = "Space",
+			mods = "CTRL|CMD",
+			action = wezterm.action.QuickSelect,
+		},
 		-- ペイン移動 (vim風のhjkl)
 		{
 			key = "h",

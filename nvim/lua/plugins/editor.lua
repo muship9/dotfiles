@@ -115,6 +115,9 @@ return {
 						},
 					},
 					file_ignore_patterns = ignore_patterns,
+					preview = {
+						line_numbers = true,
+					},
 					vimgrep_arguments = (function()
 						local args = {
 							"rg",
@@ -140,6 +143,17 @@ return {
 							vim.list_extend(args, search_ignore.rg_ignore_globs(ignore_entries))
 							return args
 						end,
+					},
+					git_status = {
+						git_icons = {
+							added = "+",
+							changed = "~",
+							copied = "C",
+							deleted = "-",
+							renamed = "→",
+							unmerged = "‡",
+							untracked = "?",
+						},
 					},
 				},
 			})
@@ -238,22 +252,4 @@ return {
 		end,
 	},
 
-	-- Git blame inline
-	{
-		"APZelos/blamer.nvim",
-		event = { "BufReadPre", "BufNewFile" },
-		keys = {
-			{ "<leader>gb", "<cmd>BlamerToggle<cr>", desc = "Toggle git blame" },
-		},
-		config = function()
-			vim.g.blamer_enabled = 1
-			vim.g.blamer_delay = 200
-			vim.g.blamer_show_in_visual_modes = 0
-			vim.g.blamer_show_in_insert_modes = 0
-			vim.g.blamer_prefix = " "
-			vim.g.blamer_template = "<committer>, <committer-time> • <summary>"
-			vim.g.blamer_date_format = "%Y/%m/%d"
-			vim.g.blamer_relative_time = 1
-		end,
-	},
 }

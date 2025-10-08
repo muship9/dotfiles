@@ -6,6 +6,21 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Dotfiles: $DOTFILES_DIR からリンクを作成します"
 
+# Homebrew packages installation
+echo ""
+echo "=== Installing Homebrew packages ==="
+if command -v brew &> /dev/null; then
+  echo "Installing zsh plugins..."
+  brew install zsh-autosuggestions zsh-syntax-highlighting
+  echo "✓ Zsh plugins installed"
+else
+  echo "⚠ Homebrew not found. Please install Homebrew first."
+  echo "  Visit: https://brew.sh"
+fi
+
+echo ""
+echo "=== Creating symbolic links ==="
+
 mkdir -p "$HOME/.config"
 mkdir -p "$HOME/.config/git"
 
