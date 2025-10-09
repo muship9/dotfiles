@@ -60,10 +60,20 @@ keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切�
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
 keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
-  local win_count = vim.fn.winnr('$')
 
-  -- ウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
-  if win_count > 1 then
+  -- Neo-tree などの特殊ウィンドウを除外してカウント
+  local normal_win_count = 0
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    -- Neo-tree, aerial, toggleterm などの特殊バッファを除外
+    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
+      normal_win_count = normal_win_count + 1
+    end
+  end
+
+  -- 通常のウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
+  if normal_win_count > 1 then
     vim.cmd("close")
     return
   end
@@ -100,10 +110,20 @@ end, { desc = "バッファを削除（スマート）" })
 -- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
 keymap("n", "<C-S-w>", function()
   local current_buf = vim.api.nvim_get_current_buf()
-  local win_count = vim.fn.winnr('$')
 
-  -- ウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
-  if win_count > 1 then
+  -- Neo-tree などの特殊ウィンドウを除外してカウント
+  local normal_win_count = 0
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    local ft = vim.bo[buf].filetype
+    -- Neo-tree, aerial, toggleterm などの特殊バッファを除外
+    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
+      normal_win_count = normal_win_count + 1
+    end
+  end
+
+  -- 通常のウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
+  if normal_win_count > 1 then
     vim.cmd("close")
     return
   end
