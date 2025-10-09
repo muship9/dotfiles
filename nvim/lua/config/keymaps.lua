@@ -81,18 +81,32 @@ keymap("n", "<leader>w", function()
   -- ウィンドウが1つの場合は、バッファを切り替えてから削除
   local alternate_buf = vim.fn.bufnr("#")
 
-  -- Check if alternate buffer is valid and listed
-  if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
+  -- Check if alternate buffer is valid, listed, and not a special buffer
+  local function is_normal_buffer(bufnr)
+    if bufnr == -1 or not vim.api.nvim_buf_is_loaded(bufnr) or not vim.bo[bufnr].buflisted then
+      return false
+    end
+    local ft = vim.bo[bufnr].filetype
+    return ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm"
+  end
+
+  if is_normal_buffer(alternate_buf) and alternate_buf ~= current_buf then
     -- Switch to alternate buffer (previously active file)
     vim.cmd("buffer " .. alternate_buf)
   else
-    -- Fallback: try to switch to the next buffer first
-    vim.cmd("bnext")
+    -- Fallback: find the next normal buffer
+    local found = false
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+      if is_normal_buffer(bufnr) and bufnr ~= current_buf then
+        vim.cmd("buffer " .. bufnr)
+        found = true
+        break
+      end
+    end
 
-    -- If we're still on the same buffer (meaning there was no next buffer),
-    -- try the previous buffer
-    if vim.api.nvim_get_current_buf() == current_buf then
-      vim.cmd("bprevious")
+    -- If no other buffer found, create a new empty buffer
+    if not found then
+      vim.cmd("enew")
     end
   end
 
@@ -131,18 +145,32 @@ keymap("n", "<C-S-w>", function()
   -- ウィンドウが1つの場合は、バッファを切り替えてから削除
   local alternate_buf = vim.fn.bufnr("#")
 
-  -- Check if alternate buffer is valid and listed
-  if alternate_buf ~= -1 and alternate_buf ~= current_buf and vim.api.nvim_buf_is_loaded(alternate_buf) and vim.bo[alternate_buf].buflisted then
+  -- Check if alternate buffer is valid, listed, and not a special buffer
+  local function is_normal_buffer(bufnr)
+    if bufnr == -1 or not vim.api.nvim_buf_is_loaded(bufnr) or not vim.bo[bufnr].buflisted then
+      return false
+    end
+    local ft = vim.bo[bufnr].filetype
+    return ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm"
+  end
+
+  if is_normal_buffer(alternate_buf) and alternate_buf ~= current_buf then
     -- Switch to alternate buffer (previously active file)
     vim.cmd("buffer " .. alternate_buf)
   else
-    -- Fallback: try to switch to the next buffer first
-    vim.cmd("bnext")
+    -- Fallback: find the next normal buffer
+    local found = false
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+      if is_normal_buffer(bufnr) and bufnr ~= current_buf then
+        vim.cmd("buffer " .. bufnr)
+        found = true
+        break
+      end
+    end
 
-    -- If we're still on the same buffer (meaning there was no next buffer),
-    -- try the previous buffer
-    if vim.api.nvim_get_current_buf() == current_buf then
-      vim.cmd("bprevious")
+    -- If no other buffer found, create a new empty buffer
+    if not found then
+      vim.cmd("enew")
     end
   end
 
