@@ -1,5 +1,8 @@
 -- Neovim minimal configuration without LazyVim
 
+-- Suppress lspconfig deprecation warnings (we'll migrate to vim.lsp.config when the API is stable)
+vim.deprecate = function() end
+
 -- Load core configurations
 require("config.options")
 require("config.keymaps")
