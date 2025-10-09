@@ -60,6 +60,13 @@ keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切�
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
 keymap("n", "<leader>w", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local current_win = vim.api.nvim_get_current_win()
+
+  -- 現在のバッファが特殊バッファの場合は何もしない
+  local current_ft = vim.bo[current_buf].filetype
+  if current_ft == "neo-tree" or current_ft == "aerial" or current_ft == "toggleterm" then
+    return
+  end
 
   -- Neo-tree などの特殊ウィンドウを除外してカウント
   local normal_win_count = 0
@@ -119,11 +126,37 @@ keymap("n", "<leader>w", function()
   if not success then
     print("Failed to delete buffer: " .. err)
   end
+
+  -- Ensure we're in a normal window, not Neo-tree
+  vim.schedule(function()
+    local cur_win = vim.api.nvim_get_current_win()
+    local cur_buf = vim.api.nvim_win_get_buf(cur_win)
+    local cur_ft = vim.bo[cur_buf].filetype
+
+    if cur_ft == "neo-tree" or cur_ft == "aerial" or cur_ft == "toggleterm" then
+      -- Find a normal window and focus it
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
+          vim.api.nvim_set_current_win(win)
+          break
+        end
+      end
+    end
+  end)
 end, { desc = "バッファを削除（スマート）" })
 
 -- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
 keymap("n", "<C-S-w>", function()
   local current_buf = vim.api.nvim_get_current_buf()
+  local current_win = vim.api.nvim_get_current_win()
+
+  -- 現在のバッファが特殊バッファの場合は何もしない
+  local current_ft = vim.bo[current_buf].filetype
+  if current_ft == "neo-tree" or current_ft == "aerial" or current_ft == "toggleterm" then
+    return
+  end
 
   -- Neo-tree などの特殊ウィンドウを除外してカウント
   local normal_win_count = 0
@@ -183,6 +216,25 @@ keymap("n", "<C-S-w>", function()
   if not success then
     print("Failed to delete buffer: " .. err)
   end
+
+  -- Ensure we're in a normal window, not Neo-tree
+  vim.schedule(function()
+    local cur_win = vim.api.nvim_get_current_win()
+    local cur_buf = vim.api.nvim_win_get_buf(cur_win)
+    local cur_ft = vim.bo[cur_buf].filetype
+
+    if cur_ft == "neo-tree" or cur_ft == "aerial" or cur_ft == "toggleterm" then
+      -- Find a normal window and focus it
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        local ft = vim.bo[buf].filetype
+        if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
+          vim.api.nvim_set_current_win(win)
+          break
+        end
+      end
+    end
+  end)
 end, { desc = "バッファを削除（Ctrl+Shift+W）" })
 
 -- Copy relative path from git root
