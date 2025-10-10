@@ -44,9 +44,15 @@ return {
 				},
 				window = {
 					mappings = {
+						-- Open files in a proper buffer window, not in neo-tree
 						["o"] = "open",
+						["<CR>"] = "open",
+						["l"] = "open",
+						["h"] = "close_node",
 					},
 				},
+				-- Ensure files are opened in the editor window, not in neo-tree
+				open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
 				event_handlers = {
 					{
 						event = "file_opened",
@@ -128,6 +134,8 @@ return {
 							"--column",
 							"--smart-case",
 							"--hidden",
+							-- Uncomment to search .gitignored files (e.g., .log files):
+							-- "--no-ignore-vcs",
 						}
 						vim.list_extend(args, search_ignore.rg_ignore_globs(ignore_entries))
 						return args
@@ -139,7 +147,11 @@ return {
 					},
 					live_grep = {
 						additional_args = function()
-							local args = { "--hidden" }
+							local args = {
+								"--hidden",
+								-- Uncomment to search .gitignored files (e.g., .log files):
+								-- "--no-ignore-vcs",
+							}
 							vim.list_extend(args, search_ignore.rg_ignore_globs(ignore_entries))
 							return args
 						end,
@@ -184,6 +196,7 @@ return {
 						return opts
 					end)(),
 					rg_opts = (function()
+						-- Add "--no-ignore-vcs" to search .gitignored files (e.g., .log files)
 						local opts = "--color=never --files --hidden --follow"
 						for _, entry in ipairs(ignore_entries) do
 							local suffix = entry.is_dir and "/**" or ""
@@ -194,6 +207,7 @@ return {
 				},
 				grep = {
 					rg_opts = (function()
+						-- Add "--no-ignore-vcs" to search .gitignored files (e.g., .log files)
 						local opts = "--column --line-number --no-heading --color=never --smart-case --hidden"
 						for _, entry in ipairs(ignore_entries) do
 							local suffix = entry.is_dir and "/**" or ""
