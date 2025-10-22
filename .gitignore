@@ -11,4 +11,4 @@ work.zsh
 env
 change-env.sh
 
-oxford.dump*
+*.log

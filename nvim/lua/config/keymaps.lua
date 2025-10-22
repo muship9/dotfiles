@@ -58,37 +58,133 @@ keymap("n", "[b", "<cmd>bprevious<cr>", { desc = "前のバッファ" })
 keymap("n", "]b", "<cmd>bnext<cr>", { desc = "次のバッファ" })
 keymap("n", "<leader>bb", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
 keymap("n", "<leader>`", "<cmd>e #<cr>", { desc = "直前のバッファへ切り替え" })
-keymap("n", "<leader>w", function()
+local function smart_close_buffer()
   local current_buf = vim.api.nvim_get_current_buf()
   local current_win = vim.api.nvim_get_current_win()
 
-  -- 現在のバッファが特殊バッファの場合は何もしない
   local current_ft = vim.bo[current_buf].filetype
   if current_ft == "neo-tree" or current_ft == "aerial" or current_ft == "toggleterm" then
     return
   end
 
-  -- Neo-tree などの特殊ウィンドウを除外してカウント
+  local force_delete = false
+  if vim.bo[current_buf].modified then
+    local choice = vim.fn.confirm("未保存の変更があります。どうしますか?", "&Save\n&Discard\n&Cancel", 1)
+    if choice == 1 then
+      local ok, err = pcall(vim.cmd, "write")
+      if not ok then
+        vim.notify("保存に失敗しました: " .. err, vim.log.levels.ERROR)
+        return
+      end
+    elseif choice == 2 then
+      force_delete = true
+    else
+      return
+    end
+  end
+
+  -- Diffビューでは before 側のバッファだけをクリーンアップ
+  if vim.wo.diff then
+    local diff_entries = {}
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      local cfg = vim.api.nvim_win_get_config(win)
+      if cfg.relative == "" and vim.api.nvim_win_get_option(win, "diff") then
+        diff_entries[#diff_entries + 1] = { win = win, buf = vim.api.nvim_win_get_buf(win) }
+      end
+    end
+
+    local function is_before_buffer(bufnr)
+      if bufnr == current_buf then
+        return false
+      end
+      if not vim.api.nvim_buf_is_valid(bufnr) or not vim.api.nvim_buf_is_loaded(bufnr) then
+        return false
+      end
+      local bo = vim.bo[bufnr]
+      if not bo.buflisted then
+        return true
+      end
+      if bo.buftype ~= "" then
+        return true
+      end
+      if bo.modifiable == false then
+        return true
+      end
+      return false
+    end
+
+    local targets = {}
+    local closing_current = false
+    for _, entry in ipairs(diff_entries) do
+      if is_before_buffer(entry.buf) then
+        targets[#targets + 1] = entry
+        if entry.win == current_win then
+          closing_current = true
+        end
+      end
+    end
+
+    if #targets > 0 then
+      if closing_current then
+        local fallback_win
+        for _, entry in ipairs(diff_entries) do
+          if entry.win ~= current_win and not is_before_buffer(entry.buf) then
+            fallback_win = entry.win
+            break
+          end
+        end
+        if not fallback_win then
+          for _, win in ipairs(vim.api.nvim_list_wins()) do
+            local cfg = vim.api.nvim_win_get_config(win)
+            if cfg.relative == "" and win ~= current_win then
+              fallback_win = win
+              break
+            end
+          end
+        end
+        if fallback_win then
+          vim.api.nvim_set_current_win(fallback_win)
+        end
+      end
+
+      pcall(vim.cmd, "diffoff!")
+
+      for _, entry in ipairs(targets) do
+        if vim.api.nvim_buf_is_valid(entry.buf) and vim.api.nvim_buf_is_loaded(entry.buf) then
+          local ok, err = pcall(vim.api.nvim_buf_delete, entry.buf, { force = true })
+          if not ok then
+            vim.notify("バッファ削除に失敗しました: " .. err, vim.log.levels.ERROR)
+          end
+        end
+        if vim.api.nvim_win_is_valid(entry.win) then
+          pcall(vim.api.nvim_win_close, entry.win, true)
+        end
+      end
+
+      return
+    end
+
+    pcall(vim.cmd, "diffoff!")
+  end
+
   local normal_win_count = 0
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.bo[buf].filetype
-    -- Neo-tree, aerial, toggleterm などの特殊バッファを除外
-    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
+    local win_config = vim.api.nvim_win_get_config(win)
+    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" and win_config.relative == "" then
       normal_win_count = normal_win_count + 1
     end
   end
 
-  -- 通常のウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
   if normal_win_count > 1 then
-    vim.cmd("close")
-    return
+    if pcall(vim.cmd, "close") then
+      return
+    end
   end
 
-  -- ウィンドウが1つの場合は、バッファを切り替えてから削除
   local alternate_buf = vim.fn.bufnr("#")
 
-  -- Check if alternate buffer is valid, listed, and not a special buffer
   local function is_normal_buffer(bufnr)
     if bufnr == -1 or not vim.api.nvim_buf_is_loaded(bufnr) or not vim.bo[bufnr].buflisted then
       return false
@@ -97,44 +193,52 @@ keymap("n", "<leader>w", function()
     return ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm"
   end
 
+  local switched = false
   if is_normal_buffer(alternate_buf) and alternate_buf ~= current_buf then
-    -- Switch to alternate buffer (previously active file)
-    vim.cmd("buffer " .. alternate_buf)
-  else
-    -- Fallback: find the next normal buffer
-    local found = false
+    local ok, err = pcall(vim.cmd, "buffer " .. alternate_buf)
+    if ok then
+      switched = true
+    else
+      vim.notify("バッファ切替に失敗しました: " .. err, vim.log.levels.ERROR)
+    end
+  end
+
+  if not switched then
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
       if is_normal_buffer(bufnr) and bufnr ~= current_buf then
-        vim.cmd("buffer " .. bufnr)
-        found = true
-        break
+        local ok, err = pcall(vim.cmd, "buffer " .. bufnr)
+        if ok then
+          switched = true
+          break
+        else
+          vim.notify("バッファ切替に失敗しました: " .. err, vim.log.levels.ERROR)
+        end
       end
     end
+  end
 
-    -- If no other buffer found, create a new empty buffer
-    if not found then
-      vim.cmd("enew")
+  if not switched then
+    local ok, err = pcall(vim.cmd, "enew")
+    if not ok then
+      vim.notify("新しいバッファを開けません: " .. err, vim.log.levels.ERROR)
+      return
     end
   end
 
-  -- Now delete the original buffer
-  -- Use pcall to handle cases where buffer deletion might fail
-  local success, err = pcall(function()
-    vim.cmd("bdelete " .. current_buf)
-  end)
-
+  local success, err = pcall(vim.api.nvim_buf_delete, current_buf, { force = force_delete })
   if not success then
-    print("Failed to delete buffer: " .. err)
+    vim.notify("バッファ削除に失敗しました: " .. err, vim.log.levels.ERROR)
   end
 
-  -- Ensure we're in a normal window, not Neo-tree
   vim.schedule(function()
+    if not vim.api.nvim_win_is_valid(current_win) then
+      return
+    end
     local cur_win = vim.api.nvim_get_current_win()
     local cur_buf = vim.api.nvim_win_get_buf(cur_win)
     local cur_ft = vim.bo[cur_buf].filetype
 
     if cur_ft == "neo-tree" or cur_ft == "aerial" or cur_ft == "toggleterm" then
-      -- Find a normal window and focus it
       for _, win in ipairs(vim.api.nvim_list_wins()) do
         local buf = vim.api.nvim_win_get_buf(win)
         local ft = vim.bo[buf].filetype
@@ -145,97 +249,12 @@ keymap("n", "<leader>w", function()
       end
     end
   end)
-end, { desc = "バッファを削除（スマート）" })
+end
+
+keymap("n", "<leader>w", smart_close_buffer, { desc = "バッファを削除（スマート）" })
 
 -- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
-keymap("n", "<C-S-w>", function()
-  local current_buf = vim.api.nvim_get_current_buf()
-  local current_win = vim.api.nvim_get_current_win()
-
-  -- 現在のバッファが特殊バッファの場合は何もしない
-  local current_ft = vim.bo[current_buf].filetype
-  if current_ft == "neo-tree" or current_ft == "aerial" or current_ft == "toggleterm" then
-    return
-  end
-
-  -- Neo-tree などの特殊ウィンドウを除外してカウント
-  local normal_win_count = 0
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    local ft = vim.bo[buf].filetype
-    -- Neo-tree, aerial, toggleterm などの特殊バッファを除外
-    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
-      normal_win_count = normal_win_count + 1
-    end
-  end
-
-  -- 通常のウィンドウが複数ある場合は、現在のウィンドウのみを閉じる
-  if normal_win_count > 1 then
-    vim.cmd("close")
-    return
-  end
-
-  -- ウィンドウが1つの場合は、バッファを切り替えてから削除
-  local alternate_buf = vim.fn.bufnr("#")
-
-  -- Check if alternate buffer is valid, listed, and not a special buffer
-  local function is_normal_buffer(bufnr)
-    if bufnr == -1 or not vim.api.nvim_buf_is_loaded(bufnr) or not vim.bo[bufnr].buflisted then
-      return false
-    end
-    local ft = vim.bo[bufnr].filetype
-    return ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm"
-  end
-
-  if is_normal_buffer(alternate_buf) and alternate_buf ~= current_buf then
-    -- Switch to alternate buffer (previously active file)
-    vim.cmd("buffer " .. alternate_buf)
-  else
-    -- Fallback: find the next normal buffer
-    local found = false
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if is_normal_buffer(bufnr) and bufnr ~= current_buf then
-        vim.cmd("buffer " .. bufnr)
-        found = true
-        break
-      end
-    end
-
-    -- If no other buffer found, create a new empty buffer
-    if not found then
-      vim.cmd("enew")
-    end
-  end
-
-  -- Now delete the original buffer
-  -- Use pcall to handle cases where buffer deletion might fail
-  local success, err = pcall(function()
-    vim.cmd("bdelete " .. current_buf)
-  end)
-
-  if not success then
-    print("Failed to delete buffer: " .. err)
-  end
-
-  -- Ensure we're in a normal window, not Neo-tree
-  vim.schedule(function()
-    local cur_win = vim.api.nvim_get_current_win()
-    local cur_buf = vim.api.nvim_win_get_buf(cur_win)
-    local cur_ft = vim.bo[cur_buf].filetype
-
-    if cur_ft == "neo-tree" or cur_ft == "aerial" or cur_ft == "toggleterm" then
-      -- Find a normal window and focus it
-      for _, win in ipairs(vim.api.nvim_list_wins()) do
-        local buf = vim.api.nvim_win_get_buf(win)
-        local ft = vim.bo[buf].filetype
-        if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" then
-          vim.api.nvim_set_current_win(win)
-          break
-        end
-      end
-    end
-  end)
-end, { desc = "バッファを削除（Ctrl+Shift+W）" })
+keymap("n", "<C-S-w>", smart_close_buffer, { desc = "バッファを削除（Ctrl+Shift+W）" })
 
 -- Copy relative path from git root
 keymap("n", "<leader>cp", function()

@@ -124,6 +124,8 @@ return {
 					preview = {
 						line_numbers = true,
 					},
+					set_env = { ["COLORTERM"] = "truecolor" },
+					preview_line_wrap = "nowrap",
 					vimgrep_arguments = (function()
 						local args = {
 							"rg",

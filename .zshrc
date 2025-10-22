@@ -39,3 +39,6 @@ done
 
 # Created by `pipx` on 2025-10-01 08:22:47
 export PATH="$PATH:/Users/shinpeimukaiyama/.local/bin"
+
+defaults write -g InitialKeyRepeat -int 10  #（リピート開始までの時間、10とか小さめでOK）
+defaults write -g KeyRepeat -int 2          #（リピート自体の速さ、1が最速）

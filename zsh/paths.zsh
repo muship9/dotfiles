@@ -10,3 +10,5 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
 # MySQL client
 export PATH="/opt/homebrew/opt/mysql-client@8.0/bin:$PATH"
+
+export GOPATH=$(go env GOPATH)
