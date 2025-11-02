@@ -167,19 +167,13 @@ local function smart_close_buffer()
     pcall(vim.cmd, "diffoff!")
   end
 
-  local normal_win_count = 0
+  local target_wins = {}
   for _, win in ipairs(vim.api.nvim_list_wins()) do
     local buf = vim.api.nvim_win_get_buf(win)
     local ft = vim.bo[buf].filetype
     local win_config = vim.api.nvim_win_get_config(win)
-    if ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" and win_config.relative == "" then
-      normal_win_count = normal_win_count + 1
-    end
-  end
-
-  if normal_win_count > 1 then
-    if pcall(vim.cmd, "close") then
-      return
+    if buf == current_buf and ft ~= "neo-tree" and ft ~= "aerial" and ft ~= "toggleterm" and win_config.relative == "" then
+      target_wins[#target_wins + 1] = win
     end
   end
 
@@ -222,6 +216,14 @@ local function smart_close_buffer()
     if not ok then
       vim.notify("新しいバッファを開けません: " .. err, vim.log.levels.ERROR)
       return
+    end
+  end
+
+  local replacement_buf = vim.api.nvim_get_current_buf()
+
+  for _, win in ipairs(target_wins) do
+    if vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == current_buf then
+      pcall(vim.api.nvim_win_set_buf, win, replacement_buf)
     end
   end
 

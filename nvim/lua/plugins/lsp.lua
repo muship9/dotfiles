@@ -35,7 +35,7 @@ return {
           "pyright",
           "lua_ls",
           "marksman", -- Markdown LSP
-          "lspconfig"
+          "lspconfig",
         },
       })
 
@@ -188,17 +188,17 @@ return {
         end
       end
 
-      lspconfig.helm_ls.setup({
-        cmd = { "helm_ls", "serve" },
-        filetypes = { "helm" },
+      lspconfig.helm_ls.setup {
         settings = {
-          helm = {
-            lint = {
-              enable = true,
-            },
-          },
-        },
-      })
+          ['helm-ls'] = {
+            yamlls = {
+              path = "yaml-language-server",
+            }
+          }
+        }
+      }
+
+
       -- 手動クリーニング用コマンド
       vim.api.nvim_create_user_command("TSDetachConflicts", function()
         local b = vim.api.nvim_get_current_buf()

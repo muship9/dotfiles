@@ -3,7 +3,7 @@
 # ================================================================
 
 # Editor aliases
-alias nv='nvim .'
+alias nv='nvim'
 alias idea="open -na 'IntelliJ IDEA' --args"
 
 # Git aliases
