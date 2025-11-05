@@ -29,6 +29,21 @@ return {
   -- color scheme
   color_scheme = "rose-pine",
 
+  -- 選択範囲の色を見やすくカスタマイズ
+  colors = {
+    selection_bg = "#524f67", -- rose-pine の overlay をベースにした明るめの色
+    selection_fg = "#e0def4", -- rose-pine の text (明るい)
+    -- コピーモードとQuickSelectモードでのハイライト
+    copy_mode_active_highlight_bg = { Color = "#c4a7e7" }, -- rose-pine の iris (紫)
+    copy_mode_active_highlight_fg = { Color = "#191724" }, -- rose-pine の base (暗い背景)
+    copy_mode_inactive_highlight_bg = { Color = "#6e6a86" }, -- 非アクティブなマッチ
+    copy_mode_inactive_highlight_fg = { Color = "#e0def4" },
+    quick_select_label_bg = { Color = "#9ccfd8" }, -- rose-pine の foam (青緑)
+    quick_select_label_fg = { Color = "#191724" },
+    quick_select_match_bg = { Color = "#6e6a86" }, -- overlay より明るめの紫
+    quick_select_match_fg = { Color = "#e0def4" },
+  },
+
   -- 非アクティブなペインの明度を下げる
   inactive_pane_hsb = {
     saturation = 0.9,
