@@ -6,6 +6,7 @@ return {
 	-- Core plugins
 	require("plugins.colorscheme"),
 	require("plugins.treesitter"),
+	require("plugins.todo-comments"),
 
 	-- LSP and completion
 	require("plugins.lsp"),
@@ -22,4 +23,3 @@ return {
 	-- External integrations
 	require("plugins.integrations"),
 }
-
