@@ -17,8 +17,8 @@ return {
           -- Yank ハイライト
           IncSearch = { bg = "#6e6a86", fg = "#d5a8ff", bold = true }, -- yank時のハイライト
           -- Git diff の色を濃くする
-          DiffAdd = { bg = "#1a3a1a", fg = "#9ccfd8" },    -- 追加行: 濃い緑背景
-          DiffDelete = { bg = "#3a1a1a", fg = "#eb6f92" }, -- 削除行: 濃い赤背景
+          DiffAdd = { bg = "#1a3a1a", fg = "#9ccfd8" },                -- 追加行: 濃い緑背景
+          DiffDelete = { bg = "#3a1a1a", fg = "#eb6f92" },             -- 削除行: 濃い赤背景
         },
       })
       vim.cmd([[colorscheme rose-pine]])

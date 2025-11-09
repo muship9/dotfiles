@@ -3,23 +3,23 @@
 
 -- Import all plugin categories
 return {
-	-- Core plugins
-	require("plugins.colorscheme"),
-	require("plugins.treesitter"),
+  -- Core plugins
+  require("plugins.colorscheme"),
+  require("plugins.treesitter"),
+  require("plugins.todo-comments"),
 
-	-- LSP and completion
-	require("plugins.lsp"),
+  -- LSP and completion
+  require("plugins.lsp"),
 
-	-- Editor enhancements
-	require("plugins.editor"),
+  -- Editor enhancements
+  require("plugins.editor"),
 
-	-- UI improvements
-	require("plugins.ui"),
+  -- UI improvements
+  require("plugins.ui"),
 
-	-- Code formatting
-	require("plugins.formatting"),
+  -- Code formatting
+  require("plugins.formatting"),
 
-	-- External integrations
-	require("plugins.integrations"),
+  -- External integrations
+  require("plugins.integrations"),
 }
-
