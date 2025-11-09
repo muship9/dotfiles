@@ -7,6 +7,7 @@ return {
   require("plugins.colorscheme"),
   require("plugins.treesitter"),
   require("plugins.todo-comments"),
+  require("plugins.dashboard"),
 
   -- LSP and completion
   require("plugins.lsp"),
