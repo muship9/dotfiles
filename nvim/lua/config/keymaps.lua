@@ -7,11 +7,11 @@ keymap("n", "<C-j>", "<C-w>j", { desc = "下のウィンドウへ移動" })
 keymap("n", "<C-k>", "<C-w>k", { desc = "上のウィンドウへ移動" })
 keymap("n", "<C-l>", "<C-w>l", { desc = "右のウィンドウへ移動" })
 
--- Alternative window navigation (in case <C-l> conflicts)
-keymap("n", "<leader>wh", "<C-w>h", { desc = "左のウィンドウへ移動" })
-keymap("n", "<leader>wj", "<C-w>j", { desc = "下のウィンドウへ移動" })
-keymap("n", "<leader>wk", "<C-w>k", { desc = "上のウィンドウへ移動" })
-keymap("n", "<leader>wr", "<C-w>l", { desc = "右のウィンドウへ移動" })
+-- Window split with hjkl
+keymap("n", "<leader>wh", "<C-W>v<C-W>h", { desc = "垂直分割（左）" })
+keymap("n", "<leader>wj", "<C-W>s", { desc = "水平分割（下）" })
+keymap("n", "<leader>wk", "<C-W>s<C-W>k", { desc = "水平分割（上）" })
+keymap("n", "<leader>wl", "<C-W>v", { desc = "垂直分割（右）" })
 
 -- Resize window using <ctrl> arrow keys
 keymap("n", "<C-Up>", "<cmd>resize +2<cr>", { desc = "ウィンドウの高さを増やす" })
@@ -48,8 +48,6 @@ keymap("n", "<leader>qa", "<cmd>qa<cr>", { desc = "すべて終了" })
 -- Windows
 keymap("n", "<leader>ww", "<C-W>p", { desc = "前のウィンドウへ" })
 keymap("n", "<leader>wd", "<C-W>c", { desc = "ウィンドウを削除" })
-keymap("n", "<leader>wb", "<C-W>s", { desc = "水平分割（下）" })
-keymap("n", "<leader>wl", "<C-W>v", { desc = "垂直分割（右）" })
 
 -- Buffers
 keymap("n", "<S-h>", "<cmd>BufferLineCyclePrev<cr>", { desc = "左のタブへ移動" })

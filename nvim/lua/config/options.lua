@@ -36,6 +36,7 @@ opt.swapfile = false
 opt.backup = false
 opt.undofile = true
 opt.undodir = vim.fn.stdpath("data") .. "/undo"
+opt.switchbuf = "useopen,usetab" -- 既存のバッファがあればそれを使う
 
 -- File handling
 opt.fixeol = true  -- Automatically add newline at end of file when saving
