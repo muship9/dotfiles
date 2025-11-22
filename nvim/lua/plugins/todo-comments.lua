@@ -23,7 +23,7 @@ return {
         },
       },
       colors = {
-        todo = { "#9ccfd8" },    -- rose-pine foam (シアン)
+        todo = { "#31748f" },    -- rose-pine pine (青緑)
         note = { "#908caa" },    -- rose-pine subtle (グレー)
         warning = { "#f6c177" }, -- rose-pine gold (オレンジ/黄色)
       },

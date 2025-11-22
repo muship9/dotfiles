@@ -27,23 +27,24 @@ return {
   window_background_opacity = 0.85,
 
   -- color scheme
-  color_scheme = "rose-pine",
+  color_scheme = "Kanagawa (Gogh)",
+  -- color_scheme = "rose-pine",
 
   -- 選択範囲の色を見やすくカスタマイズ
-  colors = {
-    background = "#191724", -- rose-pine の標準 base に戻す
-    selection_bg = "#6e6a86", -- 明るめグレー (nvim と統一)
-    selection_fg = "#d5a8ff", -- 明るい紫 (nvim と統一)
-    -- コピーモードとQuickSelectモードでのハイライト
-    copy_mode_active_highlight_bg = { Color = "#c4a7e7" }, -- rose-pine の iris (紫)
-    copy_mode_active_highlight_fg = { Color = "#191724" }, -- 標準 base
-    copy_mode_inactive_highlight_bg = { Color = "#6e6a86" }, -- 非アクティブなマッチ
-    copy_mode_inactive_highlight_fg = { Color = "#e0def4" },
-    quick_select_label_bg = { Color = "#9ccfd8" }, -- rose-pine の foam (青緑)
-    quick_select_label_fg = { Color = "#191724" },
-    quick_select_match_bg = { Color = "#6e6a86" }, -- overlay より明るめの紫
-    quick_select_match_fg = { Color = "#e0def4" },
-  },
+  -- colors = {
+  --   background = "#191724", -- rose-pine の標準 base に戻す
+  --   selection_bg = "#6e6a86", -- 明るめグレー (nvim と統一)
+  --   selection_fg = "#d5a8ff", -- 明るい紫 (nvim と統一)
+  --   -- コピーモードとQuickSelectモードでのハイライト
+  --   copy_mode_active_highlight_bg = { Color = "#c4a7e7" }, -- rose-pine の iris (紫)
+  --   copy_mode_active_highlight_fg = { Color = "#191724" }, -- 標準 base
+  --   copy_mode_inactive_highlight_bg = { Color = "#6e6a86" }, -- 非アクティブなマッチ
+  --   copy_mode_inactive_highlight_fg = { Color = "#e0def4" },
+  --   quick_select_label_bg = { Color = "#9ccfd8" }, -- rose-pine の foam (青緑)
+  --   quick_select_label_fg = { Color = "#191724" },
+  --   quick_select_match_bg = { Color = "#6e6a86" }, -- overlay より明るめの紫
+  --   quick_select_match_fg = { Color = "#e0def4" },
+  -- },
 
   -- 非アクティブなペインの明度を下げる
   inactive_pane_hsb = {

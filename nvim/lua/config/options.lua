@@ -26,6 +26,7 @@ opt.wrap = false
 opt.scrolloff = 8
 opt.sidescrolloff = 8
 opt.conceallevel = 2  -- ObsidianのUI機能を有効化
+opt.showtabline = 2  -- Always show bufferline
 
 -- Behavior
 opt.mouse = "a"

@@ -31,6 +31,14 @@ return {
 					python = { "black" },
 					rust = { "rustfmt" },
 					go = { "gofumpt" },
+					sql = { "sql_formatter" },
+				},
+				formatters = {
+					sql_formatter = {
+						command = "sql-formatter",
+						args = { "-c", vim.fn.expand("~/.sql-formatter.json") },
+						stdin = true,
+					},
 				},
 				format_on_save = function(bufnr)
 					-- Disable with a global or buffer-local variable

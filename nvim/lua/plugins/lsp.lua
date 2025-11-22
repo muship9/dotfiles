@@ -35,6 +35,7 @@ return {
           "pyright",
           "lua_ls",
           "marksman", -- Markdown LSP
+          "sqls", -- SQL LSP
           "lspconfig",
         },
       })
@@ -103,9 +104,28 @@ return {
           gopls = {
             analyses = {
               unusedparams = true,
+              shadow = true,
             },
             staticcheck = true,
             gofumpt = true,
+            -- エラーがあっても補完を提供しやすくする設定
+            allowImplicitNetworkAccess = true,
+            allowModfileModifications = true,
+            -- 診断の更新頻度を調整
+            diagnosticsDelay = "500ms",
+            -- 補完の設定（エラー時も補完が動作するように強化）
+            completeUnimported = true,
+            usePlaceholders = true,
+            deepCompletion = true,
+            matcher = "Fuzzy",
+            completionBudget = "1s", -- 補完のタイムアウトを1秒に延長
+            completeFunctionCalls = true, -- 関数呼び出しの補完を有効化
+            experimentalPostfixCompletions = true, -- 実験的な補完機能
+            -- メモリとパフォーマンスの設定
+            memoryMode = "DegradeClosed", -- 閉じたファイルのメモリを解放
+            -- エラーがあってもできるだけ補完を提供
+            completionDocumentation = true,
+            experimentalWorkspaceModule = true,
           },
         },
       })
@@ -170,6 +190,13 @@ return {
         capabilities = capabilities,
         root_dir = get_project_root({ ".git", ".marksman.toml" }),
         filetypes = { "markdown", "markdown.mdx" },
+      })
+
+      -- SQL (sqls)
+      lspconfig.sqls.setup({
+        capabilities = capabilities,
+        root_dir = get_project_root({ ".git" }),
+        filetypes = { "sql" },
       })
 
       -- Keymaps
@@ -539,6 +566,27 @@ return {
 
         return orig_buf_request(bufnr, method, params, handler)
       end
+
+      -- Create a command to clear gopls cache and restart
+      vim.api.nvim_create_user_command("GoplsClearCache", function()
+        local buf = vim.api.nvim_get_current_buf()
+        -- gopls クライアントを停止
+        for _, client in ipairs(vim.lsp.get_clients({ bufnr = buf, name = "gopls" })) do
+          vim.lsp.stop_client(client.id, true)
+          vim.notify("Stopped gopls", vim.log.levels.INFO)
+        end
+        -- キャッシュディレクトリをクリア
+        local cache_dir = vim.fn.stdpath("cache") .. "/gopls"
+        vim.fn.system("rm -rf " .. vim.fn.shellescape(cache_dir))
+        vim.notify("Cleared gopls cache", vim.log.levels.INFO)
+        -- 再起動
+        vim.defer_fn(function()
+          if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "go" then
+            vim.cmd("edit")
+            vim.notify("Restarted gopls", vim.log.levels.INFO)
+          end
+        end, 500)
+      end, { desc = "Clear gopls cache and restart" })
 
       -- Create a command to manually start LSP
       vim.api.nvim_create_user_command("LspStart", function()

@@ -9,16 +9,16 @@ alias idea="open -na 'IntelliJ IDEA' --args"
 # Git aliases
 alias gst='git status'
 alias gb='git branch'
-alias ga='git add .'
+alias ga='git add'
 alias gcm='git commit -m'
 alias gp='git pull origin $(git branch --show-current)'
 alias gpu='git push origin $(git branch --show-current)'
 alias gf='git fetch'
 alias gsw='git switch'
-# 新規ブランチを作成して切り替え
 alias gswc='git switch -c'
 alias gch='git checkout .'
 alias gd='git diff'
+alias gm='git merge'
 
 alias ~='cd ~'
 alias cdot='cd ~/dotfiles'
