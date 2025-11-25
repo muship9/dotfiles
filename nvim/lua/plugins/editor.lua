@@ -98,6 +98,7 @@ return {
     },
     config = function()
       local telescope = require("telescope")
+      local actions = require("telescope.actions")
       local search_ignore = require("config.search_ignore")
       local ignore_entries = search_ignore.entries()
       local ignore_patterns = search_ignore.patterns(ignore_entries)
@@ -159,6 +160,17 @@ return {
             end,
             -- Enable preview highlighting for grep matches
             grep_previewer = require("telescope.previewers").vim_buffer_vimgrep.new,
+          },
+          buffers = {
+            mappings = {
+              i = {
+                ["<C-d>"] = actions.delete_buffer,
+              },
+              n = {
+                ["dd"] = actions.delete_buffer,
+                ["<C-d>"] = actions.delete_buffer,
+              },
+            },
           },
           git_status = {
             git_icons = {
