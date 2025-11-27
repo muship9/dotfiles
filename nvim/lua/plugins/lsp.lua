@@ -861,6 +861,16 @@ return {
             includeCompletionsWithInsertText = true,
             includeCompletionsWithSnippetText = true,
             includeAutomaticOptionalChainCompletions = true,
+            -- 除外パターン（パフォーマンス向上）
+            excludeDirectories = {
+              "node_modules",
+              "dist",
+              "build",
+              ".next",
+              ".nuxt",
+              "out",
+              "coverage",
+            },
           },
           tsserver_format_options = {
             allowIncompleteCompletions = false,
@@ -960,7 +970,7 @@ return {
         performance = {
           debounce = 60,
           throttle = 30,
-          fetching_timeout = 2000, -- TypeScriptの複雑な型推論に対応
+          fetching_timeout = 5000, -- TypeScriptの複雑な型推論に対応（大規模プロジェクト用）
           confirm_resolve_timeout = 80,
           async_budget = 16,
           max_view_entries = 50,

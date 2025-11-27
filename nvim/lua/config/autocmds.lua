@@ -125,7 +125,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
 vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
   group = augroup("large_file_detect"),
   callback = function(args)
-    local max_filesize = 1024 * 1024 * 8 -- 8MBに増加（TypeScript診断への影響を減らすため）
+    local max_filesize = 1024 * 1024 * 2 -- 2MB（より早く大規模ファイルを検出して補完を無効化）
     local ok, stats = pcall(vim.loop.fs_stat, args.file)
     
     if ok and stats and stats.size > max_filesize then
@@ -231,6 +231,6 @@ vim.api.nvim_create_autocmd("FileType", {
         end
       end)
     end
-    end, 300) -- 300ms遅延してLSPアタッチを待つ
+    end, 100) -- 100ms遅延してLSPアタッチを待つ（タイミングずれを最小化）
   end,
 })
