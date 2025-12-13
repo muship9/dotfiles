@@ -79,6 +79,13 @@ return {
           },
         },
       })
+
+      -- Neovim起動時にNeo-treeを自動で開く
+      vim.api.nvim_create_autocmd("VimEnter", {
+        callback = function()
+          vim.cmd("Neotree show")
+        end,
+      })
     end,
   }, -- Fuzzy finder
   {

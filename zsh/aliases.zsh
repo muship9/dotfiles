@@ -34,3 +34,8 @@ alias root='cd $(git rev-parse --show-toplevel 2>/dev/null || pwd)'
 alias obs='cd ~/Documents/Obsidian\ Vault && nvim'
 alias obd='cd ~/Documents/Obsidian\ Vault && nvim daily/$(date +%Y-%m-%d).md'
 alias oby='echo -e "\n---\n$(date +"%H:%M")\n" >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && pbpaste >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && echo "✅ クリップボードの内容をデイリーノートに追加しました"'
+
+# mycli
+alias mycli-prod='mycli --myclirc ~/dotfiles/mycli/myclirc.prod'
+alias mycli-dev='mycli --myclirc ~/dotfiles/mycli/myclirc.dev'
+alias mycli-local='mycli --myclirc ~/dotfiles/mycli/myclirc.local'

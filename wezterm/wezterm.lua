@@ -61,6 +61,12 @@ return {
 
   -- key bindings
   keys = {
+    -- コピーモード
+    {
+      key = "v",
+      mods = "CTRL|CMD",
+      action = wezterm.action.ActivateCopyMode,
+    },
     -- 検索モード
     {
       key = "f",
