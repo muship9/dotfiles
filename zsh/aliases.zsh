@@ -39,3 +39,7 @@ alias oby='echo -e "\n---\n$(date +"%H:%M")\n" >> ~/Documents/Obsidian\ Vault/da
 alias mycli-prod='mycli --myclirc ~/dotfiles/mycli/myclirc.prod'
 alias mycli-dev='mycli --myclirc ~/dotfiles/mycli/myclirc.dev'
 alias mycli-local='mycli --myclirc ~/dotfiles/mycli/myclirc.local'
+
+# direnv
+alias env-local='export APP_ENV=local && direnv reload'
+alias env-stg='export APP_ENV=stg && direnv reload'
