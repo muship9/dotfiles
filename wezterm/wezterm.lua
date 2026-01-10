@@ -67,6 +67,18 @@ return {
       mods = "CTRL|CMD",
       action = wezterm.action.ActivateCopyMode,
     },
+    -- コピーモード (Cmd+Escでも起動可能)
+    {
+      key = "Escape",
+      mods = "CMD",
+      action = wezterm.action.ActivateCopyMode,
+    },
+    -- コピーモード (Cmd+[でも起動可能、vimライク)
+    {
+      key = "[",
+      mods = "CMD",
+      action = wezterm.action.ActivateCopyMode,
+    },
     -- 検索モード
     {
       key = "f",
@@ -242,6 +254,59 @@ return {
           window:toast_notification("Wezterm", "No content to add", nil, 3000)
         end
       end),
+    },
+  },
+
+  -- スクロールバックバッファのサイズ
+  scrollback_lines = 10000,
+
+  -- Copy modeのキーバインド (vimライク)
+  key_tables = {
+    copy_mode = {
+      -- vimライクな移動
+      { key = "h", mods = "NONE", action = wezterm.action.CopyMode("MoveLeft") },
+      { key = "j", mods = "NONE", action = wezterm.action.CopyMode("MoveDown") },
+      { key = "k", mods = "NONE", action = wezterm.action.CopyMode("MoveUp") },
+      { key = "l", mods = "NONE", action = wezterm.action.CopyMode("MoveRight") },
+      -- 単語移動
+      { key = "w", mods = "NONE", action = wezterm.action.CopyMode("MoveForwardWord") },
+      { key = "b", mods = "NONE", action = wezterm.action.CopyMode("MoveBackwardWord") },
+      { key = "e", mods = "NONE", action = wezterm.action.CopyMode("MoveForwardWordEnd") },
+      -- 行頭・行末
+      { key = "0", mods = "NONE", action = wezterm.action.CopyMode("MoveToStartOfLine") },
+      { key = "$", mods = "SHIFT", action = wezterm.action.CopyMode("MoveToEndOfLineContent") },
+      { key = "^", mods = "SHIFT", action = wezterm.action.CopyMode("MoveToStartOfLineContent") },
+      -- ページ移動
+      { key = "g", mods = "NONE", action = wezterm.action.CopyMode("MoveToScrollbackTop") },
+      { key = "G", mods = "SHIFT", action = wezterm.action.CopyMode("MoveToScrollbackBottom") },
+      { key = "d", mods = "CTRL", action = wezterm.action.CopyMode("MoveByPage(0.5)") },
+      { key = "u", mods = "CTRL", action = wezterm.action.CopyMode("MoveByPage(-0.5)") },
+      { key = "f", mods = "CTRL", action = wezterm.action.CopyMode("PageDown") },
+      { key = "b", mods = "CTRL", action = wezterm.action.CopyMode("PageUp") },
+      -- ビジュアルモード
+      { key = "v", mods = "NONE", action = wezterm.action.CopyMode({ SetSelectionMode = "Cell" }) },
+      { key = "V", mods = "SHIFT", action = wezterm.action.CopyMode({ SetSelectionMode = "Line" }) },
+      {
+        key = "v",
+        mods = "CTRL",
+        action = wezterm.action.CopyMode({ SetSelectionMode = "Block" }),
+      },
+      -- コピー
+      {
+        key = "y",
+        mods = "NONE",
+        action = wezterm.action.Multiple({
+          { CopyTo = "ClipboardAndPrimarySelection" },
+          { CopyMode = "Close" },
+        }),
+      },
+      -- 検索
+      { key = "/", mods = "NONE", action = wezterm.action.Search("CurrentSelectionOrEmptyString") },
+      { key = "n", mods = "NONE", action = wezterm.action.CopyMode("NextMatch") },
+      { key = "N", mods = "SHIFT", action = wezterm.action.CopyMode("PriorMatch") },
+      -- 終了
+      { key = "q", mods = "NONE", action = wezterm.action.CopyMode("Close") },
+      { key = "Escape", mods = "NONE", action = wezterm.action.CopyMode("Close") },
     },
   },
 }
