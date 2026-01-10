@@ -8,6 +8,3 @@ if [[ -f "$HOME/dotfiles/.env" ]]; then
   source "$HOME/dotfiles/.env"
   set +a
 fi
-
-# direnv setup
-echo 'eval "$(direnv hook zsh)"' >> ~/.zshrc
