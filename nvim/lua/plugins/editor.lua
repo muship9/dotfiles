@@ -209,7 +209,7 @@ return {
         lsp = {
           jump_to_single_result = true, -- 結果が1つの場合は自動ジャンプ
           ignore_current_line = true,
-          async_or_timeout = 5000, -- タイムアウトを5秒に延長
+          async_or_timeout = 5000,      -- タイムアウトを5秒に延長
         },
         files = {
           fd_opts = (function()
@@ -287,18 +287,24 @@ return {
     },
     config = function()
       require("toggleterm").setup({
-        size = 20,
+        size = 10,
         open_mapping = [[<c-/>]],
         direction = "float",
         float_opts = {
           border = "curved",
           width = function()
-            return vim.o.columns
+            return math.floor(vim.o.columns * 0.8)
           end,
           height = function()
             return math.floor(vim.o.lines * 0.8)
           end,
         },
+        on_open = function(term)
+          -- ターミナルモードから簡単にノーマルモードに抜けられるようにする
+          vim.keymap.set("t", "<Esc>", [[<C-\><C-n>]], { buffer = term.bufnr, desc = "ターミナルモードを抜ける" })
+          vim.keymap.set("t", "jk", [[<C-\><C-n>]], { buffer = term.bufnr, desc = "ターミナルモードを抜ける" })
+          -- ノーマルモードでiを押すとターミナルモードに戻る（デフォルトの動作）
+        end,
       })
     end,
   },
