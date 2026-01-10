@@ -35,6 +35,16 @@ alias obs='cd ~/Documents/Obsidian\ Vault && nvim'
 alias obd='cd ~/Documents/Obsidian\ Vault && nvim daily/$(date +%Y-%m-%d).md'
 alias oby='echo -e "\n---\n$(date +"%H:%M")\n" >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && pbpaste >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && echo "✅ クリップボードの内容をデイリーノートに追加しました"'
 
+# nb (Notebook) aliases
+alias nad='nb a ./daily/$(date +%Y-%m-%d).md'
+naw() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: naw <filename>"
+    return 1
+  fi
+  nb a "./work/$1"
+}
+
 # mycli
 alias mycli-prod='mycli --myclirc ~/dotfiles/mycli/myclirc.prod'
 alias mycli-dev='mycli --myclirc ~/dotfiles/mycli/myclirc.dev'
