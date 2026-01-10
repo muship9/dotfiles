@@ -16,6 +16,8 @@
 - **fd** (高速ファイル検索用)
 - **starship** (プロンプトカスタマイズ)
 - **WezTerm** (ターミナルエミュレータ)
+- **direnv** (環境変数管理)
+- **togglterm** (ターミナル統合)
 
 ## インストール手順
 
@@ -29,7 +31,10 @@
 brew install neovim git node
 
 # 推奨ツール
-brew install ripgrep fd starship wezterm
+brew install ripgrep fd starship wezterm direnv
+
+# nbツール（コマンドラインノート管理）
+brew install xwmx/taps/nb
 
 # Obsidianを手動でインストール
 # https://obsidian.md/
@@ -100,13 +105,19 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 
 ### その他の設定
 - **Starship**: カスタムプロンプト (`starship/`)
-- **WezTerm**: ターミナル設定 (`wezterm/`)
+- **WezTerm**: ターミナル設定（vimライクなコピーモード対応） (`wezterm/`)
+- **direnv**: 環境変数管理（重複読み込み防止対応）
 - **Git**: グローバルignore設定 (`git/`)
 - **Zsh**: エイリアス設定とシェル環境 (`zsh/`)
 
 ### カスタムエイリアス
+
+#### Obsidian関連
 - `obs` - Obsidian Vaultに移動してNeovimを開く
 - `obd` - 今日のデイリーノートを直接開く
+- `nb` - コマンドラインノート管理ツール起動
+
+#### Git関連
 - `gd` - git diff
 - `gst` - git status
 - `ga` - git add
