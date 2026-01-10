@@ -16,7 +16,10 @@ end)
 
 return {
 	-- font
-	font = wezterm.font("JetBrains Mono", { weight = "Medium", italic = true }),
+	font = wezterm.font_with_fallback({
+		{ family = "JetBrains Mono", weight = "Medium", italic = true },
+		{ family = "Noto Sans Mono CJK JP", weight = "Regular" },
+	}),
 	font_size = 14.0,
 
 	window_background_opacity = 0.85,

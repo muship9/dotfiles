@@ -25,8 +25,12 @@ opt.cursorline = true
 opt.wrap = false
 opt.scrolloff = 8
 opt.sidescrolloff = 8
-opt.conceallevel = 2 -- ObsidianのUI機能を有効化
 opt.showtabline = 2 -- Always show bufferline
+
+-- Font settings for GUI
+if vim.g.neovide then
+	opt.guifont = "JetBrains Mono,Noto Sans Mono CJK JP:h14"
+end
 
 -- Behavior
 opt.mouse = "a"
