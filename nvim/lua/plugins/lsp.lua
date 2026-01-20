@@ -35,7 +35,7 @@ return {
           "pyright",
           "lua_ls",
           "marksman", -- Markdown LSP
-          "sqls", -- SQL LSP
+          "sqls",     -- SQL LSP
           "lspconfig",
         },
       })
@@ -118,11 +118,11 @@ return {
             usePlaceholders = true,
             deepCompletion = true,
             matcher = "Fuzzy",
-            completionBudget = "1s", -- 補完のタイムアウトを1秒に延長
-            completeFunctionCalls = true, -- 関数呼び出しの補完を有効化
+            completionBudget = "1s",               -- 補完のタイムアウトを1秒に延長
+            completeFunctionCalls = true,          -- 関数呼び出しの補完を有効化
             experimentalPostfixCompletions = true, -- 実験的な補完機能
             -- メモリとパフォーマンスの設定
-            memoryMode = "DegradeClosed", -- 閉じたファイルのメモリを解放
+            memoryMode = "DegradeClosed",          -- 閉じたファイルのメモリを解放
             -- エラーがあってもできるだけ補完を提供
             completionDocumentation = true,
             experimentalWorkspaceModule = true,
@@ -842,51 +842,41 @@ return {
           -- Enable completion triggered by <c-x><c-o>
           vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
         end,
-        settings = vim.tbl_deep_extend("force", {
-          -- メモリ制限設定 (8GB - 大規模プロジェクト対応)
-          tsserver_max_memory = 8192,
+        settings = {
+          -- メモリ制限設定 (4GB - パフォーマンス重視)
+          tsserver_max_memory = 4096,
 
           -- 診断用に別のtsserverインスタンスを使用（メモリ圧迫を軽減）
           separate_diagnostic_server = true,
 
           -- tsserver settings
           tsserver_file_preferences = {
-            includeInlayParameterNameHints = "all",
+            includeInlayParameterNameHints = "none", -- パフォーマンス向上のため無効化
             includeCompletionsForModuleExports = true,
             quotePreference = "auto",
-            -- 大規模ファイル用のパフォーマンス設定
             disableSuggestions = false,
-            useLabelDetailsInCompletionEntries = true,
-            -- 補完のタイムアウトを延長
-            includeCompletionsWithInsertText = true,
-            includeCompletionsWithSnippetText = true,
-            includeAutomaticOptionalChainCompletions = true,
-            -- 除外パターン（パフォーマンス向上）
-            excludeDirectories = {
-              "node_modules",
-              "dist",
-              "build",
-              ".next",
-              ".nuxt",
-              "out",
-              "coverage",
-            },
           },
           tsserver_format_options = {
             allowIncompleteCompletions = false,
             allowRenameOfImportPath = false,
           },
 
-          -- Code lens settings
-          code_lens = "off", -- "all", "implementations_only", "references_only", "off"
+          -- Code lens settings (パフォーマンス向上のため無効化)
+          code_lens = "off",
           disable_member_code_lens = true,
 
           -- JSX close tag
           jsx_close_tag = {
-            enable = true,
-            filetypes = { "javascriptreact", "typescriptreact" },
+            enable = false, -- パフォーマンス向上のため無効化
           },
-        }, settings or {}),
+
+          -- プロジェクト参照の制限（パフォーマンス向上）
+          tsserver_plugins = {},
+
+          -- watchOptions でファイル監視を最適化
+          complete_function_calls = false,
+          include_completions_with_insert_text = false,
+        },
       })
     end,
   },

@@ -431,3 +431,22 @@ keymap("v", "<leader>oby", function()
   
   vim.notify("Added to daily note (" .. timestamp .. ")", vim.log.levels.INFO)
 end, { desc = "選択範囲をデイリーノートにコピー" })
+
+-- LSP デバッグ・管理用キーマップ
+keymap("n", "<leader>lr", "<cmd>LspRestart<cr>", { desc = "LSPサーバーを再起動" })
+keymap("n", "<leader>li", "<cmd>LspInfo<cr>", { desc = "LSP情報を表示" })
+keymap("n", "<leader>ll", function()
+	vim.cmd("edit " .. vim.lsp.get_log_path())
+end, { desc = "LSPログを開く" })
+keymap("n", "<leader>ld", function()
+	print("=== LSP Debug Info ===")
+	print("Filetype: " .. vim.bo.filetype)
+	local clients = vim.lsp.get_active_clients({ bufnr = 0 })
+	if #clients == 0 then
+		print("No LSP clients attached")
+	else
+		for _, client in ipairs(clients) do
+			print(string.format("Client: %s (id: %d)", client.name, client.id))
+		end
+	end
+end, { desc = "LSPデバッグ情報を表示" })
