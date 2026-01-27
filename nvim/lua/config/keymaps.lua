@@ -256,24 +256,19 @@ keymap("n", "<leader>w", smart_close_buffer, { desc = "バッファを削除（�
 -- Command+W support (mapped through Wezterm as Ctrl+Shift+W)
 keymap("n", "<C-S-w>", smart_close_buffer, { desc = "バッファを削除（Ctrl+Shift+W）" })
 
--- Copy relative path from git root
+-- Copy relative path from cwd
 keymap("n", "<leader>cp", function()
   local file_path = vim.fn.expand("%:p")
   if file_path == "" then
     print("No file in buffer")
     return
   end
-  
-  local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-  if vim.v.shell_error ~= 0 then
-    print("Not in a git repository")
-    return
-  end
-  
-  local relative_path = vim.fn.fnamemodify(file_path, ":s?" .. git_root .. "/??")
+
+  local cwd = vim.fn.getcwd()
+  local relative_path = vim.fn.fnamemodify(file_path, ":s?" .. cwd .. "/??")
   vim.fn.setreg("+", relative_path)
   print("Copied: " .. relative_path)
-end, { desc = "Gitルートからの相対パスをコピー" })
+end, { desc = "cwdからの相対パスをコピー" })
 
 keymap("n", "<leader>pm", function()
   local file_path = vim.api.nvim_buf_get_name(0)
