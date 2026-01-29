@@ -234,3 +234,13 @@ vim.api.nvim_create_autocmd("FileType", {
     end, 100) -- 100ms遅延してLSPアタッチを待つ（タイミングずれを最小化）
   end,
 })
+
+
+-- Markdown でスペルチェックを無効化（日本語対応）
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup("markdown_nospell"),
+  pattern = { "markdown" },
+  callback = function()
+    vim.opt_local.spell = false
+  end,
+})
