@@ -1,4 +1,32 @@
 local wezterm = require("wezterm")
+local workspaces = require("workspace")
+
+wezterm.on("gui-startup", function(cmd)
+  local first = workspaces[1]
+  if not first then return end
+
+  local function spawn_workspace(ws)
+    local tab, pane, window = wezterm.mux.spawn_window({
+      workspace = ws.name,
+      cwd = ws.cwd,
+    })
+    if ws.cmd then
+      pane:send_text(ws.cmd)
+    end
+    for _, t in ipairs(ws.tabs or {}) do
+      local _, new_pane = window:spawn_tab({ cwd = t.cwd })
+      if t.cmd then
+        new_pane:send_text(t.cmd)
+      end
+    end
+  end
+
+  for _, ws in ipairs(workspaces) do
+    spawn_workspace(ws)
+  end
+
+  wezterm.mux.set_active_workspace(first.name)
+end)
 
 -- タブタイトルを現在のディレクトリ名に設定する関数
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
@@ -23,7 +51,6 @@ return {
   font_size = 14.0,
 
   window_background_opacity = 0.85,
-  macos_window_background_blur = 20,
 
   -- color scheme
   color_scheme = "Kanagawa (Gogh)",
@@ -144,6 +171,11 @@ return {
       key = "l",
       mods = "CMD|SHIFT",
       action = wezterm.action.AdjustPaneSize({ "Right", 10 }),
+    },
+    {
+      key = ";",
+      mods = "CMD|SHIFT",
+      action = wezterm.action.AdjustPaneSize({ "Right", 80 }),
     },
     -- フォントサイズ変更
     {

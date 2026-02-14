@@ -38,7 +38,10 @@ alias obd='cd ~/Documents/Obsidian\ Vault && nvim daily/$(date +%Y-%m-%d).md'
 alias oby='echo -e "\n---\n$(date +"%H:%M")\n" >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && pbpaste >> ~/Documents/Obsidian\ Vault/daily/$(date +%Y-%m-%d).md && echo "✅ クリップボードの内容をデイリーノートに追加しました"'
 
 # nb (Notebook) aliases
-alias nad='nb a ./daily/$(date +%Y-%m-%d).md'
+export NB_DAILY_TEMPLATE="$HOME/memo/tamplete/daily.md"
+export NB_TASK_TEMPLATE="$HOME/memo/tamplete/task.md"
+alias nad='nb a ./daily/$(date +%Y-%m-%d).md  --template ${NB_DAILY_TEMPLATE}'
+alias nat='nb a ./work/$(date +%Y-%m-%d).md  --template ${NB_TASK_TEMPLATE}'
 naw() {
   if [[ -z "$1" ]]; then
     echo "Usage: naw <filename>"
@@ -55,3 +58,11 @@ alias mycli-local='mycli --myclirc ~/dotfiles/mycli/myclirc.local'
 # direnv
 alias env-local='export APP_ENV=local && direnv reload'
 alias env-stg='export APP_ENV=stg && direnv reload'
+
+y() {
+	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+	command yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd"
+	rm -f -- "$tmp"
+}
