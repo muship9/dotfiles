@@ -20,7 +20,9 @@
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Read(//Users/SHINP09/**)"
+      "Read(//Users/SHINP09/**)",
+      "Bash(source:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }
