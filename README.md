@@ -9,7 +9,6 @@
 - **Git**
 - **Node.js** & **npm** (LSP servers用)
 - **Homebrew** (macOS)
-- **Obsidian** (ノート管理)
 
 ### 推奨
 - **ripgrep** (高速検索用)
@@ -17,7 +16,6 @@
 - **starship** (プロンプトカスタマイズ)
 - **WezTerm** (ターミナルエミュレータ)
 - **direnv** (環境変数管理)
-- **togglterm** (ターミナル統合)
 
 ## インストール手順
 
@@ -35,9 +33,6 @@ brew install ripgrep fd starship wezterm direnv
 
 # nbツール（コマンドラインノート管理）
 brew install xwmx/taps/nb
-
-# Obsidianを手動でインストール
-# https://obsidian.md/
 ```
 
 ### 2. dotfilesのクローンとセットアップ
@@ -69,11 +64,14 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 
 ### Neovim (`nvim/`)
 - **プラグイン管理**: lazy.nvim
-- **LSP**: 各言語のLanguage Server Protocol対応
+- **LSP**: Mason.nvim + 各言語のLanguage Server
 - **ファイル探索**: Neo-tree, Telescope, fzf-lua
-- **自動補完**: nvim-cmp
+- **自動補完**: nvim-cmp + LuaSnip
 - **シンタックスハイライト**: Treesitter
-- **Obsidian連携**: obsidian.nvim (Markdownノート管理)
+- **フォーマット**: conform.nvim (stylua, prettier等)
+- **AI補完**: Copilot.lua
+- **Markdown**: render-markdown.nvim
+- **TODO管理**: todo-comments.nvim
 
 ### 主要キーマッピング
 
@@ -89,19 +87,6 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 - `<leader>gb` - Git blame
 - `<leader>gB` - GitHubで開く
 
-#### Obsidian関連
-- `<leader>on` - 新規ノート作成
-- `<leader>oo` - Obsidianアプリを開く/アクティブ化
-- `<leader>os` - ノート検索
-- `<leader>oq` - クイックスイッチ
-- `<leader>od` - 今日のデイリーノート
-- `<leader>oy` - 昨日のデイリーノート
-- `<leader>ot` - テンプレート挿入
-- `<leader>ob` - バックリンク表示
-- `<leader>ol` - リンク表示
-- `<leader>ow` - ワークスペース切替
-- `<leader>oa` - Obsidianアプリをアクティブ化
-- `<leader>oby` - 選択範囲/現在行をデイリーノートにコピー
 
 ### その他の設定
 - **Starship**: カスタムプロンプト (`starship/`)
@@ -112,34 +97,57 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 
 ### カスタムエイリアス
 
-#### Obsidian関連
-- `obs` - Obsidian Vaultに移動してNeovimを開く
-- `obd` - 今日のデイリーノートを直接開く
-- `nb` - コマンドラインノート管理ツール起動
+#### ナビゲーション
+- `cdot` - dotfilesディレクトリへ移動
+- `cw` - workspaceへ移動
+- `root` - Gitリポジトリのルートへ移動
+
+#### nb関連（ノート管理）
+- `nad` - 今日のデイリーノート作成
+- `nat` - タスクノート作成
+- `naw <filename>` - workディレクトリに新規ファイル作成
 
 #### Git関連
-- `gd` - git diff
 - `gst` - git status
+- `gd` - git diff
 - `ga` - git add
-- `gc` - git commit -m
+- `gcm` - git commit -m
 - `gp` - git pull origin (現在のブランチ)
 - `gpu` - git push origin (現在のブランチ)
-- `gs` - git switch
+- `gsw` - git switch
+- `gswc` - git switch -c (新規ブランチ作成)
+- `gswm` - git switch main
 
-## Obsidian連携
 
-ターミナルからObsidianのノートを効率的に操作できるように設定済み。
+## Skills Directory
 
-### セットアップ
-1. Obsidianアプリをインストール
-2. `~/Documents/Obsidian Vault` にVaultを作成
-3. 設定は自動で適用される
+実行可能な操作手順を整理したドキュメント集。具体的な作業を行う際の参照用。
 
-### 機能
-- Neovim内からObsidianのノート管理
-- デイリーノートの自動作成・編集
-- 選択したコードやテキストのデイリーノートへの追加
-- Obsidianアプリとの連携
+| ファイル | 内容 |
+|---------|------|
+| `coding-standards.md` | コーディング規約とベストプラクティス |
+| `debugging.md` | トラブルシューティング手順 |
+| `deployment.md` | セットアップとデプロイ手順 |
+| `git-operations.md` | Git操作とコミット規約 |
+| `language-environments.md` | 言語別開発環境設定 |
+| `lint-and-format.md` | コード検証とフォーマット |
+| `mcp-setup.md` | MCPサーバー設定（Atlassian, Kibela, Figma） |
+| `plugin-management.md` | Neovimプラグイン管理 |
+| `search-and-navigation.md` | 検索とファイルナビゲーション |
+
+## Claude連携
+
+### プロジェクト設定
+- `CLAUDE.md` - このリポジトリ専用のClaude Code設定
+- `claude/global.md` - 全プロジェクト共通のグローバル設定
+
+### MCPサーバー統合
+Model Context Protocol (MCP) を使用した外部サービス連携:
+- Atlassian (JIRA)
+- Kibela (ドキュメント管理)
+- Figma (デザインツール)
+
+詳細は `skills/mcp-setup.md` を参照。
 
 ## トラブルシューティング
 
@@ -150,6 +158,8 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 :checkhealth
 :Mason  # LSP serverの管理
 ```
+
+詳細なトラブルシューティングは `skills/debugging.md` を参照。
 
 ## ファイル構成
 
@@ -162,12 +172,28 @@ dotfiles/
 │   ├── init.lua
 │   └── lua/
 │       ├── config/    # 基本設定（keymaps, options, autocmds）
-│       └── plugins/   # プラグイン設定（obsidian, lsp, ui等）
-├── zsh/               # Zsh設定
+│       └── plugins/   # プラグイン設定（lsp, formatting, ui等）
+├── zsh/               # Zsh設定（モジュール式）
 │   ├── aliases.zsh    # カスタムエイリアス
 │   ├── editor.zsh     # エディター設定
 │   ├── environment.zsh # 環境変数
+│   ├── mcp.zsh        # MCPサーバー設定
 │   └── ...
+├── skills/            # 実行可能な操作手順書
+│   ├── coding-standards.md
+│   ├── debugging.md
+│   ├── deployment.md
+│   ├── git-operations.md
+│   ├── language-environments.md
+│   ├── lint-and-format.md
+│   ├── mcp-setup.md
+│   ├── plugin-management.md
+│   └── search-and-navigation.md
+├── claude/            # Claude グローバル設定
+│   └── global.md      # 全プロジェクト共通の指示
+├── docs/              # 詳細ドキュメント
+│   └── lsp-troubleshooting.md
+├── mycli/             # CLIツール
 ├── starship/          # Starshipプロンプト設定
 ├── wezterm/           # WezTerm設定
 └── git/               # Git設定（global ignore）
