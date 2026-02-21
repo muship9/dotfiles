@@ -56,3 +56,9 @@ fi
 
 # ai/codex.md を ~/.codex/AGENTS.md としてシンボリックリンクを作成
 ln -svf ~/dotfiles/ai/codex.md ~/.codex/AGENTS.md
+
+# Claude global configuration
+if [ ! -d ~/.claude ]; then
+  mkdir -p ~/.claude
+fi
+ln -svf ~/dotfiles/claude/global.md ~/.claude/global.md
