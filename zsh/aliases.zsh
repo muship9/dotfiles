@@ -59,6 +59,10 @@ alias mycli-local='mycli --myclirc ~/dotfiles/mycli/myclirc.local'
 alias env-local='export APP_ENV=local && direnv reload'
 alias env-stg='export APP_ENV=stg && direnv reload'
 
+# Claude aliases
+alias c='claude'
+alias cr='claude --resume'
+
 y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	command yazi "$@" --cwd-file="$tmp"
