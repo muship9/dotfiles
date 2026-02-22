@@ -24,7 +24,8 @@
       "Bash(source:*)",
       "Bash(chmod:*)",
       "Bash(ln -sfn ~/dotfiles/claude/global.md ~/.claude/global.md)",
-      "Bash(git reset HEAD -- .claude/settings.local.json git/ignore)"
+      "Bash(git reset HEAD -- .claude/settings.local.json git/ignore)",
+      "WebFetch(domain:code.claude.com)"
     ],
     "deny": []
   }
