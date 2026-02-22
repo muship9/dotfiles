@@ -1,31 +1,10 @@
 # Git Operations
 
-## このプロジェクトのエイリアス
-
-```bash
-# 基本操作
-gst  → git status
-ga   → git add
-gcm  → git commit -m
-gd   → git diff
-
-# ブランチ操作  
-gsw  → git switch
-gswc → git switch -c (新規作成)
-gswm → git switch main
-gb   → git branch
-
-# リモート操作
-gpu  → git push origin $(git branch --show-current)
-gp   → git pull origin $(git branch --show-current)
-gf   → git fetch
-```
-
 ## コミット規約
 
 形式: `type(scope): summary`
 
-### type
+### type定義
 - **feat**: 新機能追加
 - **fix**: バグ修正
 - **docs**: ドキュメント変更
@@ -34,61 +13,107 @@ gf   → git fetch
 - **test**: テスト追加・修正
 - **chore**: ビルド・ツール変更
 
-### scope (このプロジェクト用)
+### scope定義（このプロジェクト固有）
 - **nvim**: Neovim設定
 - **zsh**: Zsh設定
 - **wezterm**: WezTerm設定
 - **starship**: Starshipプロンプト
 - **git**: Git設定
 - **claude**: Claude Code設定
+- **skills**: skillsドキュメント
 
-### 例
+### コミットメッセージ例
 ```bash
-git commit -m "feat(nvim): add telescope extension"
-git commit -m "fix(zsh): resolve PATH duplication"
-git commit -m "docs(skills): add debugging guide"
+# 設定ファイル変更時
+"feat(nvim): add telescope extension for file history"
+"fix(zsh): resolve PATH duplication on macOS"
+"refactor(skills): simplify git-operations for Claude Code"
+
+# Claude設定変更時は必ずスコープを明示
+"feat(claude): add WebFetch permission for documentation"
+"docs(claude): add GitHub workflow guidelines"
 ```
 
-## ブランチ命名
+## GitHub ワークフロー
 
-- `feature/description` - 機能追加
-- `fix/description` - バグ修正
-- `docs/description` - ドキュメント
-- `refactor/description` - リファクタリング
-
-## よく使うコマンド
-
-### ログ確認
+### PR作成手順
 ```bash
-git log --oneline -10           # 簡潔表示
-git log --graph --oneline --all # グラフ表示
+# 1. ブランチ作成（命名規則に従う）
+git switch -c feature/description  # 新機能
+git switch -c fix/description       # バグ修正
+git switch -c refactor/description  # リファクタリング
+
+# 2. 変更をコミット（上記規約に従う）
+git add -A
+git commit -m "type(scope): clear description"
+
+# 3. リモートにプッシュ
+git push -u origin branch-name
+
+# 4. PR作成（必ずdraftで開始）
+gh pr create --draft \
+  --title "type(scope): タイトル（日本語OK）" \
+  --body "PR説明（日本語で記載）"
+
+# 5. レビュー準備完了後
+gh pr ready PR番号
 ```
 
-### 変更の取り消し
-```bash
-git commit --amend              # 直前のコミット修正
-git reset --soft HEAD~1         # コミット取り消し（ファイル残る）
-git reset --hard HEAD~1         # 完全に取り消し（注意）
+### PR説明テンプレート
+```markdown
+## 概要
+[変更の概要を1-2文で]
+
+## 変更内容
+- 変更点1
+- 変更点2
+
+## テスト観点
+- [ ] テスト項目1
+- [ ] テスト項目2
 ```
 
-### stash
+## トラブルシューティング
+
+### マージコンフリクト解決
 ```bash
-git stash                       # 一時保存
-git stash pop                   # 復元して削除
-git stash list                  # 一覧
+# 最新のmainを取得してマージ
+git fetch origin main
+git merge origin/main
+
+# コンフリクトファイルを確認・編集
+git status  # コンフリクトファイル確認
+# ファイルを編集して <<<<<<< ======= >>>>>>> を解決
+
+# 解決後
+git add 解決したファイル
+git commit -m "Merge branch 'origin/main' into current-branch"
+git push
 ```
 
-## マージコンフリクト解決
+### PR作成時のエラー
+```bash
+# draft状態の確認
+gh pr view PR番号 --json isDraft,state
 
-1. `git status` でコンフリクトファイル確認
-2. ファイルを編集して解決
-3. `git add <file>` でステージング
-4. `git commit` で完了
+# CI失敗時はログ確認
+gh pr checks PR番号
 
-## ベストプラクティス
+# PR一覧確認
+gh pr list --author @me
+```
 
-- 1コミット1機能
-- 意味のあるコミットメッセージ
-- プッシュ前に `git diff` と `git status` で確認
-- 秘密情報をコミットしない
-- `.gitignore` を適切に設定
+## プロジェクト固有の注意事項
+
+### 変更を避けるべきファイル
+- `.claude/settings.local.json` - 自動生成される権限設定
+- 生成されたファイルの末尾の改行に注意
+
+### git/ignoreの管理
+- 重複エントリを避ける
+- 特に `**/.claude/settings.local.json` の重複に注意
+
+### コミット時の確認事項
+- 機密情報が含まれていないか
+- lint/formatを実行したか（`skills/lint-and-format.md` 参照）
+- 不要なデバッグコードが残っていないか
