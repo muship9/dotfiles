@@ -22,7 +22,9 @@
       "Bash(git commit:*)",
       "Read(//Users/SHINP09/**)",
       "Bash(source:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(ln -sfn ~/dotfiles/claude/global.md ~/.claude/global.md)",
+      "Bash(git reset HEAD -- .claude/settings.local.json git/ignore)"
     ],
     "deny": []
   }
