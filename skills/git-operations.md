@@ -1,272 +1,136 @@
 # Git Operations
 
-## 概要
-Git操作のエイリアス、コミット規約、ブランチ管理方法。
-効率的なバージョン管理とチーム開発のためのGitワークフロー。
+## Worktree運用（推奨）
 
-## Gitエイリアス一覧
+### 運用方針
+メインディレクトリは常にmainブランチを保持し、各作業は別ディレクトリで並行実施する。
 
-### 基本操作
-```bash
-# ステータス確認
-gst  # git status
-
-# ファイル追加
-ga   # git add
-ga . # 全ファイル追加
-
-# コミット
-gcm  # git commit -m
-
-# 差分確認
-gd   # git diff
+```
+~/dotfiles/              # メインディレクトリ（常にmain）
+~/dotfiles-feat-xyz/     # 新機能開発用
+~/dotfiles-fix-abc/      # バグ修正用
+~/dotfiles-pr-14/        # PR #14 レビュー用
 ```
 
-### ブランチ操作
-```bash
-# ブランチ一覧
-gb   # git branch
+### 命名規則
+- `dotfiles-feat-*`: 新機能開発
+- `dotfiles-fix-*`: バグ修正
+- `dotfiles-pr-*`: PRレビュー用
+- `dotfiles-hotfix`: 緊急修正用
 
-# ブランチ切り替え
-gsw  # git switch
-gswc # git switch -c (新規作成して切り替え)
-gswm # git switch main (mainブランチへ)
+### 活用シナリオ
 
-# 変更を破棄
-gch  # git checkout . (全ファイルの変更を破棄)
-```
+#### 緊急バグ修正
+feature開発中でも、新しいworktreeで即座に対応。stashやcommit不要。
 
-### リモート操作
-```bash
-# プル
-gp   # git pull origin $(git branch --show-current)
+#### 複数PRの並行レビュー
+PR #14とPR #15を同時にレビューする場合、それぞれ別ディレクトリで動作確認。
 
-# プッシュ
-gpu  # git push origin $(git branch --show-current)
-
-# フェッチ
-gf   # git fetch
-
-# マージ
-gm   # git merge
-```
+#### コンテキストスイッチ
+作業中のコードを一切触らずに、別タスクへ即座に切り替え可能。
 
 ## コミット規約
 
-### 基本形式
-```
-type(scope): summary
+形式: `type(scope): summary`
 
-詳細な説明（任意）
-
-関連Issue: #123（任意）
-```
-
-### Type一覧
+### type定義
 - **feat**: 新機能追加
 - **fix**: バグ修正
 - **docs**: ドキュメント変更
-- **style**: コードスタイル変更（機能に影響なし）
+- **style**: コードスタイル（機能に影響なし）
 - **refactor**: リファクタリング
 - **test**: テスト追加・修正
-- **chore**: ビルドプロセスや補助ツールの変更
+- **chore**: ビルド・ツール変更
 
-### Scope一覧（このプロジェクト用）
+### scope定義（このプロジェクト固有）
 - **nvim**: Neovim設定
 - **zsh**: Zsh設定
 - **wezterm**: WezTerm設定
 - **starship**: Starshipプロンプト
 - **git**: Git設定
-- **docs**: ドキュメント
-- **skills**: スキルドキュメント
+- **claude**: Claude Code設定
+- **skills**: skillsドキュメント
 
-### コミット例
+### コミットメッセージ例
 ```bash
-# 新機能
-git commit -m "feat(nvim): add new telescope extension for file history"
-
-# バグ修正
-git commit -m "fix(zsh): resolve PATH duplication issue on macOS"
-
-# ドキュメント
-git commit -m "docs(skills): add debugging guide for common issues"
-
-# リファクタリング
-git commit -m "refactor(nvim): simplify plugin loading logic"
-
-# 設定変更
-git commit -m "chore: update gitignore for local env files"
+"feat(nvim): add telescope extension for file history"
+"fix(zsh): resolve PATH duplication on macOS"
+"refactor(skills): optimize git-operations for Claude Code"
+"docs(claude): add GitHub workflow guidelines"
 ```
 
-## ブランチ戦略
+## GitHub ワークフロー
 
-### ブランチ命名規則
-```bash
-# 機能追加
-feature/description-of-feature
+### PR作成フロー（Worktree前提）
+1. **worktree作成**: 専用ディレクトリで作業開始
+2. **作業実施**: 編集・テスト・コミット
+3. **PR作成**: `gh pr create --draft`（必ずdraftから）
+4. **レビュー準備**: `gh pr ready PR番号`
+5. **マージ後**: worktreeディレクトリを削除
 
-# バグ修正
-fix/description-of-fix
+### PR説明テンプレート
+```markdown
+## 概要
+[変更の概要を1-2文で]
 
-# ドキュメント
-docs/description-of-docs
+## 変更内容
+- 変更点1
+- 変更点2
 
-# 実験的変更
-experimental/description
+## テスト観点
+- [ ] テスト項目1
+- [ ] テスト項目2
 ```
 
-### ワークフロー例
+### GitHub CLI活用
 ```bash
-# 1. 新機能の開発開始
-git switch -c feature/add-new-plugin
+# PR状態確認
+gh pr view PR番号 --json isDraft,state
 
-# 2. 作業とコミット
-git add .
-git commit -m "feat(nvim): add new plugin configuration"
+# CI確認
+gh pr checks PR番号
 
-# 3. リモートへプッシュ
-git push origin feature/add-new-plugin
-
-# 4. mainブランチへマージ（PR後）
-git switch main
-git pull origin main
-git merge feature/add-new-plugin
-
-# 5. ブランチの削除
-git branch -d feature/add-new-plugin
-git push origin --delete feature/add-new-plugin
-```
-
-## 便利なGitコマンド
-
-### ログ確認
-```bash
-# 簡潔なログ表示
-git log --oneline -10
-
-# グラフ表示
-git log --graph --oneline --all
-
-# 特定ファイルの履歴
-git log --follow path/to/file
-```
-
-### 変更の取り消し
-```bash
-# 直前のコミットを修正
-git commit --amend
-
-# 特定のコミットまで戻る（履歴は残る）
-git revert <commit-hash>
-
-# 特定のコミットまで戻る（履歴も消える）
-git reset --hard <commit-hash>  # 注意：データが失われる
-
-# ステージングを取り消し
-git reset HEAD <file>
-```
-
-### stash操作
-```bash
-# 一時保存
-git stash
-git stash save "作業内容の説明"
-
-# 一覧表示
-git stash list
-
-# 復元
-git stash pop   # 最新を復元して削除
-git stash apply # 最新を復元（削除しない）
-
-# 削除
-git stash drop
-git stash clear # 全て削除
-```
-
-## Gitグローバル設定
-
-### 基本設定
-```bash
-# ユーザー情報
-git config --global user.name "Your Name"
-git config --global user.email "your.email@example.com"
-
-# エディター設定
-git config --global core.editor "nvim"
-
-# グローバルignore
-git config --global core.excludesFile "$HOME/.config/git/ignore"
-```
-
-### エイリアス設定（グローバル）
-```bash
-# よく使うコマンドのエイリアス
-git config --global alias.st "status"
-git config --global alias.co "checkout"
-git config --global alias.br "branch"
-git config --global alias.cm "commit -m"
-git config --global alias.last "log -1 HEAD"
+# 自分のPR一覧
+gh pr list --author @me
 ```
 
 ## トラブルシューティング
 
-### マージコンフリクト
+### Worktree関連
+
+#### ブランチが既に使用中
+他のworktreeで使用中のブランチは使えない。`git worktree list`で確認。
+
+#### worktreeディレクトリが見つからない
+手動削除した場合は`git worktree prune`で参照をクリーンアップ。
+
+### マージコンフリクト解決
 ```bash
-# 1. コンフリクトファイルを確認
-git status
+# worktree内で最新mainを取り込み
+git fetch origin main
+git merge origin/main
 
-# 2. ファイルを編集してコンフリクトを解決
-nvim <conflicted-file>
+# コンフリクトファイルを編集して解決
+# <<<<<<< ======= >>>>>>> マーカーを削除
 
-# 3. 解決後、ステージング
-git add <resolved-file>
-
-# 4. コミット
-git commit
+# 解決後
+git add 解決したファイル
+git commit -m "Merge branch 'origin/main' into current-branch"
+git push
 ```
 
-### リモートとの同期問題
-```bash
-# リモートの状態を確認
-git remote -v
-git fetch --all
+## プロジェクト固有の注意事項
 
-# ローカルをリモートに強制的に合わせる
-git reset --hard origin/main
+### 変更を避けるべきファイル
+- `.claude/settings.local.json` - 自動生成される権限設定
+- 各worktreeでの設定は独立している
 
-# リモートをローカルに強制的に合わせる（危険）
-git push --force origin main
-```
+### git/ignoreの管理
+- 重複エントリを避ける
+- 特に `**/.claude/settings.local.json` の重複に注意
 
-### 間違えてコミットした場合
-```bash
-# 直前のコミットを取り消し（ファイルは残る）
-git reset --soft HEAD~1
-
-# 直前のコミットを完全に取り消し（ファイルも戻る）
-git reset --hard HEAD~1
-```
-
-## ベストプラクティス
-
-### コミット前の確認
-```bash
-# 必ず差分を確認
-git diff
-git diff --staged  # ステージング済みの差分
-
-# ステータスを確認
-git status
-```
-
-### きれいな履歴を保つ
-- 1コミット1機能を心がける
-- WIPコミットは後でsquashする
-- 意味のあるコミットメッセージを書く
-- プッシュ前にログを確認する
-
-### セキュリティ
-- 秘密情報をコミットしない
-- `.gitignore`を適切に設定
-- 間違えてコミットした場合は履歴から完全に削除
+### コミット前チェックリスト
+- [ ] 機密情報が含まれていないか
+- [ ] lint/formatを実行したか（`skills/lint-and-format.md` 参照）
+- [ ] 正しいworktreeで作業しているか（`pwd` で確認）
+- [ ] コミットメッセージは規約に従っているか
