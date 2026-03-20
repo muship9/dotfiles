@@ -27,7 +27,21 @@
       "Bash(git reset HEAD -- .claude/settings.local.json git/ignore)",
       "WebFetch(domain:code.claude.com)",
       "Bash(grep -E '^[^d].*\\.(md|txt|sh|json|yaml|yml|toml)$')",
-      "Bash(tree -L 2 -d)"
+      "Bash(tree -L 2 -d)",
+      "Bash(git -C /Users/shinpeimukaiyama/dotfiles config --local -l 2>/dev/null | head -20)",
+      "Bash(git -C /Users/shinpeimukaiyama/dotfiles config --global -l 2>/dev/null | grep -E \"worktree|diff\" | head -10)",
+      "Bash(brew search:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "WebSearch",
+      "Bash(gh repo:*)",
+      "Bash(brew uninstall:*)",
+      "Read(//Users/shinpeimukaiyama/.claude/**)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//Users/shinpeimukaiyama/dotfiles/**)",
+      "Bash(done)"
     ],
     "deny": []
   }
