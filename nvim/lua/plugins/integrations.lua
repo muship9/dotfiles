@@ -96,6 +96,37 @@ return {
 		end,
 	},
 
+	-- Diffview (git diff viewer, works with worktrees)
+	{
+		"sindrets/diffview.nvim",
+		cmd = { "DiffviewOpen", "DiffviewClose", "DiffviewToggleFiles", "DiffviewFocusFiles", "DiffviewFileHistory" },
+		keys = {
+			{ "<leader>dv", "<cmd>DiffviewOpen<cr>", desc = "Diffview: 変更一覧を開く" },
+			{ "<leader>dV", "<cmd>DiffviewFileHistory %<cr>", desc = "Diffview: 現在ファイルの履歴" },
+			{ "<leader>dx", "<cmd>DiffviewClose<cr>", desc = "Diffview: 閉じる" },
+		},
+		config = function()
+			require("diffview").setup({
+				enhanced_diff_hl = true,
+			})
+		end,
+	},
+
+	-- Octo (GitHub issues/PRs in Neovim)
+	{
+		"pwntester/octo.nvim",
+		cmd = "Octo",
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"nvim-telescope/telescope.nvim",
+			"nvim-tree/nvim-web-devicons",
+		},
+		opts = {
+			picker = "telescope",
+			enable_builtin = true,
+		},
+	},
+
 	-- Claude integration (optional)
 	{
 		"greggh/claude-code.nvim",
