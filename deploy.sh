@@ -49,16 +49,3 @@ link "$DOTFILES_DIR/git/ignore" "$HOME/.config/git/ignore"
 echo "Gitのグローバルignoreを設定するには、次を実行してください:"
 echo "  git config --global core.excludesFile \"$HOME/.config/git/ignore\""
 
-# .codex ディレクトリが存在しない場合は作成
-if [ ! -d ~/.codex ]; then
-  mkdir -p ~/.codex
-fi
-
-# ai/codex.md を ~/.codex/AGENTS.md としてシンボリックリンクを作成
-ln -svf ~/dotfiles/ai/codex.md ~/.codex/AGENTS.md
-
-# Claude global configuration
-if [ ! -d ~/.claude ]; then
-  mkdir -p ~/.claude
-fi
-ln -svf ~/dotfiles/claude/global.md ~/.claude/global.md

@@ -121,7 +121,7 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 
 ## Skills Directory
 
-実行可能な操作手順を整理したドキュメント集。具体的な作業を行う際の参照用。
+実行可能な操作手順を整理したドキュメント集（`.claude/skills/`）。具体的な作業を行う際の参照用。
 
 | ファイル | 内容 |
 |---------|------|
@@ -139,7 +139,6 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 
 ### プロジェクト設定
 - `CLAUDE.md` - このリポジトリ専用のClaude Code設定
-- `claude/global.md` - 全プロジェクト共通のグローバル設定
 
 ### MCPサーバー統合
 Model Context Protocol (MCP) を使用した外部サービス連携:
@@ -147,7 +146,7 @@ Model Context Protocol (MCP) を使用した外部サービス連携:
 - Kibela (ドキュメント管理)
 - Figma (デザインツール)
 
-詳細は `skills/mcp-setup.md` を参照。
+詳細は `.claude/skills/mcp-setup.md` を参照。
 
 ## トラブルシューティング
 
@@ -159,7 +158,7 @@ Model Context Protocol (MCP) を使用した外部サービス連携:
 :Mason  # LSP serverの管理
 ```
 
-詳細なトラブルシューティングは `skills/debugging.md` を参照。
+詳細なトラブルシューティングは `.claude/skills/debugging.md` を参照。
 
 ## ファイル構成
 
@@ -179,18 +178,8 @@ dotfiles/
 │   ├── environment.zsh # 環境変数
 │   ├── mcp.zsh        # MCPサーバー設定
 │   └── ...
-├── skills/            # 実行可能な操作手順書
-│   ├── coding-standards.md
-│   ├── debugging.md
-│   ├── deployment.md
-│   ├── git-operations.md
-│   ├── language-environments.md
-│   ├── lint-and-format.md
-│   ├── mcp-setup.md
-│   ├── plugin-management.md
-│   └── search-and-navigation.md
-├── claude/            # Claude グローバル設定
-│   └── global.md      # 全プロジェクト共通の指示
+├── .claude/           # Claude Code設定
+│   └── skills/        # 実行可能な操作手順書
 ├── docs/              # 詳細ドキュメント
 │   └── lsp-troubleshooting.md
 ├── mycli/             # CLIツール
