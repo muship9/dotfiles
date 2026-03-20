@@ -7,11 +7,24 @@ return {
   ft = { "markdown" },
   opts = {
     heading = {
-      position = 'inline',
-      icons = { '1. ', '2. ', '3. ', '4. ', '5. ', '6. ' },
+      sign = false,
+      icons = { "# ", "## ", "### ", "#### ", "##### ", "###### " },
+      backgrounds = { "", "", "", "", "", "" }, -- 背景なし
     },
     bullet = {
-      icons = { '·' },
+      icons = { "●", "○", "◆", "◇" },
+    },
+    code = {
+      sign = false,
+      width = "block",
+      right_pad = 1,
+    },
+    dash = {
+      icon = "─",
+      width = "full",
+    },
+    link = {
+      enabled = true,
     },
   },
 }

@@ -244,3 +244,34 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.spell = false
   end,
 })
+
+-- Markdown シンタックスハイライト（Claude Code 風配色）
+local function set_markdown_highlights()
+  -- Treesitter 見出し（H1: オレンジ、H2: シアン、H3以降: 他色）
+  vim.api.nvim_set_hl(0, "@markup.heading.1.markdown", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.heading.2.markdown", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.heading.3.markdown", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.heading.4.markdown", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.heading.5.markdown", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.heading.6.markdown", { fg = "#DCA561", bold = true })
+  -- リンク・URL（シアン）
+  vim.api.nvim_set_hl(0, "@markup.link.url.markdown_inline", { fg = "#7DCFFF", underline = true })
+  vim.api.nvim_set_hl(0, "@markup.link.markdown_inline", { fg = "#7DCFFF" })
+  vim.api.nvim_set_hl(0, "@markup.link.label.markdown_inline", { fg = "#7DCFFF" })
+  -- Bold / Italic
+  vim.api.nvim_set_hl(0, "@markup.strong.markdown_inline", { fg = "#C8C093", bold = true })
+  vim.api.nvim_set_hl(0, "@markup.italic.markdown_inline", { fg = "#C8C093", italic = true })
+  -- render-markdown.nvim ハイライトグループ
+  vim.api.nvim_set_hl(0, "RenderMarkdownH1", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "RenderMarkdownH2", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "RenderMarkdownH3", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "RenderMarkdownH4", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "RenderMarkdownH5", { fg = "#DCA561", bold = true })
+  vim.api.nvim_set_hl(0, "RenderMarkdownH6", { fg = "#DCA561", bold = true })
+end
+
+set_markdown_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", {
+  group = augroup("markdown_highlights"),
+  callback = set_markdown_highlights,
+})
