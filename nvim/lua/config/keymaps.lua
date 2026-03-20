@@ -37,6 +37,9 @@ keymap("v", ">", ">gv")
 -- Save file
 keymap({ "i", "x", "n", "s" }, "<C-s>", "<cmd>w<cr><esc>", { desc = "ファイルを保存" })
 
+-- Reload file
+keymap("n", "<C-e>", "<cmd>e!<cr>", { desc = "ファイルを強制リロード" })
+
 -- Help
 keymap("n", "<leader>h", "<cmd>Telescope keymaps<cr>", { desc = "キーマップ一覧を表示" })
 
