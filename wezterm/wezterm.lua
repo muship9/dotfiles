@@ -50,7 +50,7 @@ return {
   }),
   font_size = 14.0,
 
-  window_background_opacity = 0.85,
+  window_background_opacity = 0.90,
 
   -- color scheme
   color_scheme = "Kanagawa (Gogh)",
@@ -71,6 +71,11 @@ return {
   -- key bindings
   keys = {
     -- コピーモード
+    {
+      key = "v",
+      mods = "CTRL",
+      action = wezterm.action.ActivateCopyMode,
+    },
     {
       key = "v",
       mods = "CTRL|CMD",
@@ -193,6 +198,52 @@ return {
       key = "9",
       mods = "CMD",
       action = wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }),
+    },
+    -- 前コマンドの出力をコピー (Shell Integration + OSC 133 が必要)
+    {
+      key = "o",
+      mods = "CMD|SHIFT",
+      action = wezterm.action_callback(function(window, pane)
+        local zones = pane:get_semantic_zones()
+        local last_output = nil
+        for _, zone in ipairs(zones) do
+          if zone.semantic_type == "Output" then
+            last_output = zone
+          end
+        end
+
+        if not last_output then
+          window:toast_notification("WezTerm", "コマンド出力が見つかりません（Shell Integration が必要）", nil, 3000)
+          return
+        end
+
+        -- get_lines_as_text(n) は n 行を返す。安定行インデックス (stable row index) を使って範囲を計算
+        local num_lines = 5000
+        local all_text = pane:get_lines_as_text(num_lines)
+        local lines = {}
+        for line in (all_text .. "\n"):gmatch("([^\n]*)\n") do
+          table.insert(lines, line)
+        end
+
+        -- WezTerm の安定行インデックス: ビューポート先頭 = 0、スクロールバックは負の値
+        -- get_lines_as_text(n) の行 i に対応する安定行 = -(n - i)
+        -- よって: line_index = num_lines + stable_row_index
+        local start_idx = num_lines + last_output.start_y
+        local end_idx = num_lines + last_output.end_y
+
+        local output_lines = {}
+        for i = math.max(1, start_idx), math.min(end_idx, #lines) do
+          table.insert(output_lines, lines[i])
+        end
+
+        local output = table.concat(output_lines, "\n"):gsub("%s+$", "")
+        if #output > 0 then
+          window:copy_to_clipboard(output, "Clipboard")
+          window:toast_notification("コピー完了", "コマンド出力をコピーしました", nil, 2000)
+        else
+          window:toast_notification("WezTerm", "コピーする内容がありません", nil, 2000)
+        end
+      end),
     },
     {
       key = "n",

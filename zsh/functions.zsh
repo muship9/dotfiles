@@ -73,3 +73,13 @@ function es() {
   done
 }
 
+# 前回のコマンドを再実行してクリップボードにコピー (出力は画面にも表示)
+# WezTerm の Cmd+Shift+O で再実行なしにコピーする場合は Shell Integration が必要
+function cco() {
+  local last_cmd
+  last_cmd=$(fc -ln -1)
+  echo "$ ${last_cmd}"
+  eval "${last_cmd}" 2>&1 | tee >(pbcopy)
+  print "\n[クリップボードにコピーしました]"
+}
+

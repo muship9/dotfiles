@@ -65,3 +65,17 @@ fi
 if command -v direnv &> /dev/null; then
   eval "$(direnv hook zsh)"
 fi
+
+# WezTerm Shell Integration
+# コマンド出力をセマンティックゾーンとしてマーク (OSC 133)
+# WezTerm の Cmd+Shift+O でコマンド出力を直接コピーするために必要
+if [[ -n "${WEZTERM_PANE}" ]]; then
+  _wezterm_mark_output_start() {
+    printf '\033]133;C\007'
+  }
+  _wezterm_mark_output_end() {
+    printf '\033]133;D;%s\007' "$?"
+  }
+  add-zsh-hook preexec _wezterm_mark_output_start
+  add-zsh-hook precmd _wezterm_mark_output_end
+fi
