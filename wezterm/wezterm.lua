@@ -28,8 +28,24 @@ wezterm.on("gui-startup", function(cmd)
   wezterm.mux.set_active_workspace(first.name)
 end)
 
--- タブタイトルを現在のディレクトリ名に設定する関数
+-- タブの形をカスタマイズ
+local SOLID_LEFT_ARROW = wezterm.nerdfonts.ple_lower_right_triangle
+local SOLID_RIGHT_ARROW = wezterm.nerdfonts.ple_upper_left_triangle
+
+-- タブタイトルを現在のディレクトリ名に設定し、形をカスタマイズする関数
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
+  local background = "#5c6d74"
+  local foreground = "#FFFFFF"
+  local edge_background = "#1f1f28"  -- Kanagawaテーマの背景色
+  
+  if tab.is_active then
+    background = "#6b4f9f"  -- もっと濃いパープル
+    foreground = "#FFFFFF"
+  end
+  
+  local edge_foreground = background
+  
+  -- タイトルの取得
   local title = tab.active_pane.title
   -- プロセス名とパスから現在のディレクトリを取得
   if tab.active_pane.current_working_dir then
@@ -39,7 +55,23 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
       title = basename
     end
   end
-  return title
+  
+  -- タイトルの長さを調整
+  title = " " .. wezterm.truncate_right(title, max_width - 1) .. " "
+  
+  return {
+    { Attribute = { Italic = false } },
+    { Attribute = { Intensity = tab.is_active and "Bold" or "Normal" } },
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = SOLID_LEFT_ARROW },
+    { Background = { Color = background } },
+    { Foreground = { Color = foreground } },
+    { Text = title },
+    { Background = { Color = edge_background } },
+    { Foreground = { Color = edge_foreground } },
+    { Text = SOLID_RIGHT_ARROW },
+  }
 end)
 
 return {
@@ -54,6 +86,18 @@ return {
 
   -- color scheme
   color_scheme = "Kanagawa (Gogh)",
+  
+  -- カラーの設定
+  colors = {
+    tab_bar = {
+      -- タブ同士の境界線を非表示
+      inactive_tab_edge = "none",
+      -- タブバーとターミナルの境界線を非表示
+      background = "#1f1f28",
+    },
+    -- タブバーとターミナル間のボーダーを無効化
+    split = "#1f1f28",
+  },
 
   -- 非アクティブなペインの明度を下げる
   inactive_pane_hsb = {
@@ -61,10 +105,33 @@ return {
     brightness = 0.6,
   },
 
-  tab_bar_at_bottom = true,
+  -- タイトルバーを非表示
+  window_decorations = "RESIZE",
+  
+  -- タブバーの設定
+  tab_bar_at_bottom = false,
+  use_fancy_tab_bar = true,  -- fancy tab barを使用してformat-tab-titleを有効化
+  hide_tab_bar_if_only_one_tab = true,  -- タブが一つの時は非表示
+  show_new_tab_button_in_tab_bar = false,  -- タブの追加ボタンを非表示
+  show_close_tab_button_in_tabs = false,  -- タブの閉じるボタンを非表示
+  
+  -- タブバーの設定
+  window_frame = {
+    inactive_titlebar_bg = "#1f1f28",  -- Kanagawaテーマの背景色
+    active_titlebar_bg = "#1f1f28",    -- Kanagawaテーマの背景色
+    font_size = 14.0,  -- タブバーのフォントサイズ
+    border_left_width = "0",
+    border_right_width = "0",
+    border_bottom_height = "0",
+    border_top_height = "0",
+    border_left_color = "#1f1f28",
+    border_right_color = "#1f1f28",
+    border_bottom_color = "#1f1f28",
+    border_top_color = "#1f1f28",
+  },
 
   -- タブタイトルの設定
-  tab_max_width = 32,
+  tab_max_width = 24,
 
   automatically_reload_config = true,
 
