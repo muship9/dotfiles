@@ -116,6 +116,9 @@ return {
 	{
 		"pwntester/octo.nvim",
 		cmd = "Octo",
+		keys = {
+			{ "<leader>gp", "<cmd>Octo pr list<cr>", desc = "GitHub PR一覧" },
+		},
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-telescope/telescope.nvim",

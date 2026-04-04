@@ -362,8 +362,6 @@ keymap("n", "<leader>gB", function()
   print("Opened in GitHub: " .. github_url)
 end, { desc = "現在のファイルをGitHubで開く" })
 
-keymap("n", "<leader>gp", "<cmd>Octo pr list<cr>", { desc = "GitHub PR一覧" })
-
 -- LSP デバッグ・管理用キーマップ
 keymap("n", "<leader>lr", "<cmd>LspRestart<cr>", { desc = "LSPサーバーを再起動" })
 keymap("n", "<leader>li", "<cmd>LspInfo<cr>", { desc = "LSP情報を表示" })
