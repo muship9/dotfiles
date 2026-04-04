@@ -42,7 +42,8 @@
       "Bash(do echo:*)",
       "Read(//Users/shinpeimukaiyama/dotfiles/**)",
       "Bash(done)",
-      "Bash(cargo search:*)"
+      "Bash(cargo search:*)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": []
   },

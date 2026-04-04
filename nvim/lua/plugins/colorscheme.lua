@@ -1,15 +1,27 @@
 -- Colorscheme
 return {
+	-- {
+	-- 	"rebelot/kanagawa.nvim",
+	-- 	lazy = false,
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		require("kanagawa").setup({
+	-- 			transparent = true,
+	-- 			compile = false,
+	-- 		})
+	-- 		vim.cmd("colorscheme kanagawa-wave")
+	-- 	end,
+	-- },
 	{
-		"rebelot/kanagawa.nvim",
+		"Aejkatappaja/sora",
 		lazy = false,
 		priority = 1000,
-		config = function()
-			require("kanagawa").setup({
-				transparent = true,
-				compile = false,
-			})
-			vim.cmd("colorscheme kanagawa-wave")
+		opts = {
+			transparent = true,
+		},
+		config = function(_, opts)
+			require("sora").setup(opts)
+			vim.cmd("colorscheme sora")
 		end,
 	},
 }
