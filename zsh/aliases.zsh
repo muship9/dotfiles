@@ -59,6 +59,14 @@ alias mycli-local='mycli --myclirc ~/dotfiles/mycli/myclirc.local'
 alias env-local='export APP_ENV=local && direnv reload'
 alias env-stg='export APP_ENV=stg && direnv reload'
 
+# Terraform aliases
+alias tf='terraform'
+alias tfi='terraform init'
+alias tfp='terraform plan'
+alias tfa='terraform apply'
+alias tfs='terraform show'
+alias tfsl='terraform state list'
+
 # Claude aliases
 alias c='claude'
 alias cr='claude --resume'
