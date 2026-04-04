@@ -36,7 +36,7 @@ local function read_entries()
           pattern = text,
           is_dir = is_dir,
           has_magic = has_magic,
-          lua_pattern = has_magic and glob_to_lua_pattern(text) or text,
+          lua_pattern = glob_to_lua_pattern(text),
         })
       end
     end

@@ -12,7 +12,7 @@ return {
       backgrounds = { "", "", "", "", "", "" }, -- 背景なし
     },
     bullet = {
-      icons = { "●", "○", "◆", "◇" },
+      icons = { "•", "◦", "▸", "▹" },
     },
     code = {
       sign = false,
