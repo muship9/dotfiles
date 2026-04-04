@@ -306,6 +306,8 @@ return {
         mods = "NONE",
         action = wezterm.action.Multiple({
           { CopyTo = "ClipboardAndPrimarySelection" },
+          { CopyMode = "ClearSelectionMode" },
+          { CopyMode = "ClearPattern" },
           { CopyMode = "Close" },
         }),
       },
@@ -313,9 +315,9 @@ return {
       { key = "/",      mods = "NONE",  action = wezterm.action.Search("CurrentSelectionOrEmptyString") },
       { key = "n",      mods = "NONE",  action = wezterm.action.CopyMode("NextMatch") },
       { key = "N",      mods = "SHIFT", action = wezterm.action.CopyMode("PriorMatch") },
-      -- 終了
-      { key = "q",      mods = "NONE",  action = wezterm.action.CopyMode("Close") },
-      { key = "Escape", mods = "NONE",  action = wezterm.action.CopyMode("Close") },
+      -- 終了 (選択を解除してから閉じる)
+      { key = "q",      mods = "NONE",  action = wezterm.action.Multiple({ { CopyMode = "ClearSelectionMode" }, { CopyMode = "ClearPattern" }, { CopyMode = "Close" } }) },
+      { key = "Escape", mods = "NONE",  action = wezterm.action.Multiple({ { CopyMode = "ClearSelectionMode" }, { CopyMode = "ClearPattern" }, { CopyMode = "Close" } }) },
     },
   },
 }
