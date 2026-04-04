@@ -41,8 +41,12 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//Users/shinpeimukaiyama/dotfiles/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cargo search:*)"
     ],
     "deny": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "kibela"
+  ]
 }

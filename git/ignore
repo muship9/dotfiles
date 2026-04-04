@@ -14,13 +14,11 @@ change-env.sh
 *.log
 
 oxford.dump*
-**/.claude
+**/.claude/settings.local.json
+**/.claude/worktrees/
 **/.playwright-mcp
 task-doc/
 
 md
 
 config.local.yml
-
-
-**/.claude/settings.local.json
