@@ -27,6 +27,12 @@ return {
         -- git blame (GitSignsCurrentLineBlame) をソラパレットに合わせて調整
         vim.api.nvim_set_hl(0, "GitSignsCurrentLineBlame", { fg = "#586478", italic = true })
 
+        -- @module / @variable.member / @operator をコメント色と区別できるよう明るく
+        vim.api.nvim_set_hl(0, "@module",                { fg = "#c8d0e0" })
+        vim.api.nvim_set_hl(0, "@module.builtin",        { fg = "#c8d0e0", italic = true })
+        vim.api.nvim_set_hl(0, "@variable.member",       { fg = "#c8d0e0" })
+        vim.api.nvim_set_hl(0, "@operator",              { fg = "#c8d0e0" })
+
         -- Telescope: transparent時に真っ黒になる浮動ウィンドウをbg_elevatedで統一
         vim.api.nvim_set_hl(0, "TelescopeNormal",          { fg = "#c8d0e0", bg = "#14161e" })
         vim.api.nvim_set_hl(0, "TelescopePreviewNormal",   { fg = "#c8d0e0", bg = "#14161e" })
