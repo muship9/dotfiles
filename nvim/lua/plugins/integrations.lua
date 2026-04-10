@@ -117,17 +117,26 @@ return {
 		"pwntester/octo.nvim",
 		cmd = "Octo",
 		keys = {
-			{ "<leader>gp", "<cmd>Octo pr list<cr>", desc = "GitHub PR一覧" },
+			{ "<leader>pl", "<cmd>Octo pr list<cr>", desc = "GitHub PR一覧" },
 		},
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-telescope/telescope.nvim",
 			"nvim-tree/nvim-web-devicons",
+			"sindrets/diffview.nvim",
 		},
 		opts = {
 			picker = "telescope",
 			enable_builtin = true,
 			default_merge_method = "squash",
+			mappings = {
+				pull_request = {
+					open_in_browser = { lhs = "<leader>gB", desc = "ブラウザでPRを開く" },
+					review_start = { lhs = "<localleader>rs", desc = "PRレビューを開始" },
+					review_resume = { lhs = "<localleader>rr", desc = "PRレビューを再開" },
+					submit_review = { lhs = "<localleader>rS", desc = "レビューをサブミット" },
+				},
+			},
 		},
 	},
 

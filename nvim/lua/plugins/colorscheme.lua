@@ -33,6 +33,10 @@ return {
         vim.api.nvim_set_hl(0, "@variable.member",       { fg = "#c8d0e0" })
         vim.api.nvim_set_hl(0, "@operator",              { fg = "#c8d0e0" })
 
+        -- Visual selection を見やすく
+        vim.api.nvim_set_hl(0, "Visual",    { bg = "#2a3a5a" })
+        vim.api.nvim_set_hl(0, "VisualNOS", { bg = "#2a3a5a" })
+
         -- Telescope: transparent時に真っ黒になる浮動ウィンドウをbg_elevatedで統一
         vim.api.nvim_set_hl(0, "TelescopeNormal",          { fg = "#c8d0e0", bg = "#14161e" })
         vim.api.nvim_set_hl(0, "TelescopePreviewNormal",   { fg = "#c8d0e0", bg = "#14161e" })
