@@ -8,7 +8,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   group = augroup("highlight_yank"),
   callback = function()
     vim.highlight.on_yank()
-end,
+  end,
 })
 
 -- 補完デバッグ用コマンド（常時定義）
@@ -127,11 +127,11 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
   callback = function(args)
     local max_filesize = 1024 * 1024 * 2 -- 2MB（より早く大規模ファイルを検出して補完を無効化）
     local ok, stats = pcall(vim.loop.fs_stat, args.file)
-    
+
     if ok and stats and stats.size > max_filesize then
       -- 大規模ファイル用の設定を適用
       vim.b.large_file = true
-      
+
       -- syntax highlightingを制限
       vim.cmd("syntax off")
       vim.opt_local.wrap = false
@@ -139,14 +139,15 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "FileReadPre" }, {
       vim.opt_local.undofile = false
       vim.opt_local.swapfile = false
       vim.opt_local.relativenumber = false
-      
+
       -- folding を無効化
       vim.opt_local.foldenable = false
-      
+
       -- 長い行のためのsynmaxcolを設定
       vim.opt_local.synmaxcol = 120
-      
-      vim.notify(string.format("大規模ファイル検出 (%.1fMB). パフォーマンスのため一部機能を無効化", stats.size / (1024 * 1024)), vim.log.levels.INFO)
+
+      vim.notify(string.format("大規模ファイル検出 (%.1fMB). パフォーマンスのため一部機能を無効化", stats.size / (1024 * 1024)), vim.log.levels
+        .INFO)
     end
   end,
 })
@@ -161,76 +162,76 @@ vim.api.nvim_create_autocmd("FileType", {
     pcall(vim.fn.sign_define, "DiagnosticSignWarn", { text = "⚠", texthl = "DiagnosticSignWarn" })
     pcall(vim.fn.sign_define, "DiagnosticSignInfo", { text = "ⓘ", texthl = "DiagnosticSignInfo" })
     pcall(vim.fn.sign_define, "DiagnosticSignHint", { text = "💡", texthl = "DiagnosticSignHint" })
-    
+
     -- LSPがアタッチされるまで少し待つ
     vim.defer_fn(function()
       if not vim.api.nvim_buf_is_valid(args.buf) then
         return
       end
-    
-    -- 大規模ファイルの場合は診断を軽量化（完全無効化はしない）
-    if vim.b[args.buf].large_file then
-      local ok, err = pcall(vim.diagnostic.config, {
-        virtual_text = {
-          -- エラーと警告のみ表示
-          severity = { min = vim.diagnostic.severity.WARN },
-          prefix = "●",
-          spacing = 4,
-        },
-        signs = {
-          -- エラーと警告のみ表示
-          severity = { min = vim.diagnostic.severity.WARN },
-        },
-        update_in_insert = false,
-        underline = {
-          -- エラーのみ下線表示
-          severity = { min = vim.diagnostic.severity.ERROR },
-        },
-        -- フロート表示は通常通り
-        float = {
-          focusable = true,
-          style = "minimal",
-          border = "none",
-        },
-      })
-      
-      if not ok then
-        vim.notify("大規模ファイル用診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
-      end
-    else
-      -- 通常サイズのファイルでは完全な診断設定を適用
-      local ok, err = pcall(vim.diagnostic.config, {
-        virtual_text = {
-          prefix = "●",
-          spacing = 4,
-          severity = nil, -- すべてのレベルを表示
-        },
-        signs = {
-          severity = nil, -- すべてのレベルを表示  
-        },
-        update_in_insert = false,
-        underline = {
-          severity = nil, -- すべてのレベルを表示
-        },
-        severity_sort = true,
-        float = {
-          focusable = true,
-          style = "minimal",
-          border = "none",
-        },
-      })
-      
-      if not ok then
-        vim.notify("診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
-      end
-      
-      -- 診断が強制的に有効になっていることを確認
-      vim.schedule(function()
-        if vim.api.nvim_buf_is_valid(args.buf) then
-          pcall(vim.diagnostic.show, nil, args.buf)
+
+      -- 大規模ファイルの場合は診断を軽量化（完全無効化はしない）
+      if vim.b[args.buf].large_file then
+        local ok, err = pcall(vim.diagnostic.config, {
+          virtual_text = {
+            -- エラーと警告のみ表示
+            severity = { min = vim.diagnostic.severity.WARN },
+            prefix = "●",
+            spacing = 4,
+          },
+          signs = {
+            -- エラーと警告のみ表示
+            severity = { min = vim.diagnostic.severity.WARN },
+          },
+          update_in_insert = false,
+          underline = {
+            -- エラーのみ下線表示
+            severity = { min = vim.diagnostic.severity.ERROR },
+          },
+          -- フロート表示は通常通り
+          float = {
+            focusable = true,
+            style = "minimal",
+            border = "none",
+          },
+        })
+
+        if not ok then
+          vim.notify("大規模ファイル用診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
         end
-      end)
-    end
+      else
+        -- 通常サイズのファイルでは完全な診断設定を適用
+        local ok, err = pcall(vim.diagnostic.config, {
+          virtual_text = {
+            prefix = "●",
+            spacing = 4,
+            severity = nil, -- すべてのレベルを表示
+          },
+          signs = {
+            severity = nil, -- すべてのレベルを表示
+          },
+          update_in_insert = false,
+          underline = {
+            severity = nil, -- すべてのレベルを表示
+          },
+          severity_sort = true,
+          float = {
+            focusable = true,
+            style = "minimal",
+            border = "none",
+          },
+        })
+
+        if not ok then
+          vim.notify("診断設定でエラー: " .. tostring(err), vim.log.levels.WARN)
+        end
+
+        -- 診断が強制的に有効になっていることを確認
+        vim.schedule(function()
+          if vim.api.nvim_buf_is_valid(args.buf) then
+            pcall(vim.diagnostic.show, nil, args.buf)
+          end
+        end)
+      end
     end, 100) -- 100ms遅延してLSPアタッチを待つ（タイミングずれを最小化）
   end,
 })
