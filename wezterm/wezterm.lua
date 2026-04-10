@@ -33,18 +33,22 @@ local SOLID_LEFT_ARROW = wezterm.nerdfonts.ple_lower_right_triangle
 local SOLID_RIGHT_ARROW = wezterm.nerdfonts.ple_upper_left_triangle
 
 -- タブタイトルを現在のディレクトリ名に設定し、形をカスタマイズする関数
+wezterm.on("update-right-status", function(window, pane)
+  window:set_right_status("")
+end)
+
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
   local background = "#5c6d74"
   local foreground = "#FFFFFF"
-  local edge_background = "#1f1f28"  -- Kanagawaテーマの背景色
-  
+  local edge_background = "#1f1f28" -- Kanagawaテーマの背景色
+
   if tab.is_active then
-    background = "#6b4f9f"  -- もっと濃いパープル
+    background = "#6b4f9f" -- もっと濃いパープル
     foreground = "#FFFFFF"
   end
-  
+
   local edge_foreground = background
-  
+
   -- タイトルの取得
   local title = tab.active_pane.title
   -- プロセス名とパスから現在のディレクトリを取得
@@ -55,10 +59,10 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
       title = basename
     end
   end
-  
+
   -- タイトルの長さを調整
   title = " " .. wezterm.truncate_right(title, max_width - 1) .. " "
-  
+
   return {
     { Attribute = { Italic = false } },
     { Attribute = { Intensity = tab.is_active and "Bold" or "Normal" } },
@@ -82,11 +86,33 @@ return {
   }),
   font_size = 14.0,
 
-  window_background_opacity = 0.90,
+  window_background_opacity = 0.92,
 
   -- color scheme
-  color_scheme = "Kanagawa (Gogh)",
-  
+  color_scheme = "Sora",
+
+  color_schemes = {
+    ["Sora"] = {
+      background    = "#0e1018",
+      foreground    = "#c8d0e0",
+      cursor_bg     = "#b0a0d8",
+      cursor_fg     = "#0e1018",
+      cursor_border = "#b0a0d8",
+      selection_bg  = "#3a2a5a",
+      selection_fg  = "#dce4f0",
+      scrollbar_thumb = "#222838",
+      split         = "#222838",
+      ansi = {
+        "#0e1018", "#c46c78", "#90c8a0", "#d4b878",
+        "#80c8e0", "#b0a0d8", "#78b8b0", "#c8d0e0",
+      },
+      brights = {
+        "#4a5468", "#d88898", "#a8d8b4", "#e0c888",
+        "#98d8f0", "#c4b4e8", "#90d0c8", "#dce4f0",
+      },
+    },
+  },
+
   -- カラーの設定
   colors = {
     tab_bar = {
@@ -96,30 +122,30 @@ return {
       background = "#1f1f28",
     },
     -- タブバーとターミナル間のボーダーを無効化
-    split = "#1f1f28",
+    split = "rgba(0,0,0,0)",
   },
 
   -- 非アクティブなペインの明度を下げる
   inactive_pane_hsb = {
     saturation = 0.9,
-    brightness = 0.6,
+    brightness = 0.7,
   },
 
   -- タイトルバーを非表示
   window_decorations = "RESIZE",
-  
+
   -- タブバーの設定
   tab_bar_at_bottom = false,
-  use_fancy_tab_bar = true,  -- fancy tab barを使用してformat-tab-titleを有効化
-  hide_tab_bar_if_only_one_tab = true,  -- タブが一つの時は非表示
-  show_new_tab_button_in_tab_bar = false,  -- タブの追加ボタンを非表示
+  use_fancy_tab_bar = true,               -- fancy tab barを使用してformat-tab-titleを有効化
+  hide_tab_bar_if_only_one_tab = true,    -- タブが一つの時は非表示
+  show_new_tab_button_in_tab_bar = false, -- タブの追加ボタンを非表示
   show_close_tab_button_in_tabs = false,  -- タブの閉じるボタンを非表示
-  
+
   -- タブバーの設定
   window_frame = {
-    inactive_titlebar_bg = "#1f1f28",  -- Kanagawaテーマの背景色
-    active_titlebar_bg = "#1f1f28",    -- Kanagawaテーマの背景色
-    font_size = 14.0,  -- タブバーのフォントサイズ
+    inactive_titlebar_bg = "#1f1f28", -- Kanagawaテーマの背景色
+    active_titlebar_bg = "#1f1f28",   -- Kanagawaテーマの背景色
+    font_size = 14.0,                 -- タブバーのフォントサイズ
     border_left_width = "0",
     border_right_width = "0",
     border_bottom_height = "0",
