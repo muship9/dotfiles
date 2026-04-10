@@ -30,7 +30,8 @@ for f in \
   "$DOTFILES_DIR/zsh/shell-enhancements.zsh" \
   "$DOTFILES_DIR/zsh/functions.zsh" \
   "$DOTFILES_DIR/zsh/aliases.zsh" \
-  "$DOTFILES_DIR/zsh/environment.zsh"; do
+  "$DOTFILES_DIR/zsh/environment.zsh" \
+  "$DOTFILES_DIR/zsh/kube-ps1.zsh"; do
   [[ -s "$f" ]] && source "$f"
 done
 
