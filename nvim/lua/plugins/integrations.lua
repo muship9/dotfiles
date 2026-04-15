@@ -132,9 +132,15 @@ return {
 			mappings = {
 				pull_request = {
 					open_in_browser = { lhs = "<leader>gB", desc = "ブラウザでPRを開く" },
-					review_start = { lhs = "<localleader>rs", desc = "PRレビューを開始" },
-					review_resume = { lhs = "<localleader>rr", desc = "PRレビューを再開" },
-					submit_review = { lhs = "<localleader>rS", desc = "レビューをサブミット" },
+					review_start = { lhs = "<leader>rs", desc = "PRレビューを開始" },
+					review_resume = { lhs = "<leader>rr", desc = "PRレビューを再開" },
+					react_rocket = { lhs = "", desc = "" },
+				},
+				review_diff = {
+					submit_review = { lhs = "<leader>re", desc = "レビューをサブミット（承認/変更要求/コメント）" },
+				},
+				file_panel = {
+					submit_review = { lhs = "<leader>re", desc = "レビューをサブミット（承認/変更要求/コメント）" },
 				},
 			},
 		},
