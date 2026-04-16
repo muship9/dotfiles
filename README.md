@@ -16,6 +16,9 @@
 - **starship** (プロンプトカスタマイズ)
 - **WezTerm** (ターミナルエミュレータ)
 - **direnv** (環境変数管理)
+- **yazi** (ターミナルファイルマネージャ)
+- **k9s** (Kubernetes TUI)
+- **mycli** (MySQL CLI)
 
 ## インストール手順
 
@@ -29,28 +32,27 @@
 brew install neovim git node
 
 # 推奨ツール
-brew install ripgrep fd starship wezterm direnv
-
-# nbツール（コマンドラインノート管理）
-brew install xwmx/taps/nb
+brew install ripgrep fd starship direnv yazi k9s mycli
+brew install --cask wezterm
 ```
 
 ### 2. dotfilesのクローンとセットアップ
 
 ```bash
-# dotfilesをクローン（例: ~/dotfiles 配下）
 git clone <your-repo-url> ~/dotfiles
 cd ~/dotfiles
 
-# デプロイスクリプトを実行
 chmod +x deploy.sh
 ./deploy.sh
 ```
 
+`deploy.sh` は以下を行います:
+- Zsh plugins のインストール (`zsh-autosuggestions`, `zsh-syntax-highlighting`)
+- `~/.zshrc`, `~/.config/nvim`, `~/.config/wezterm`, `~/.config/starship.toml`, `~/.config/git/ignore` のシンボリックリンク作成
+
 ### 3. シェル設定の反映
 
 ```bash
-# zshrc設定を反映
 source ~/.zshrc
 ```
 
@@ -65,88 +67,56 @@ git config --global core.excludesFile "$HOME/.config/git/ignore"
 ### Neovim (`nvim/`)
 - **プラグイン管理**: lazy.nvim
 - **LSP**: Mason.nvim + 各言語のLanguage Server
-- **ファイル探索**: Neo-tree, Telescope, fzf-lua
+- **ファイル探索**: Neo-tree, Telescope
 - **自動補完**: nvim-cmp + LuaSnip
 - **シンタックスハイライト**: Treesitter
 - **フォーマット**: conform.nvim (stylua, prettier等)
-- **AI補完**: Copilot.lua
+- **AI補完**: Copilot.lua, claude-code.nvim
+- **Git統合**: gitsigns.nvim (hunk操作), diffview.nvim (diff/履歴ビューア), octo.nvim (GitHub PR/Issues)
 - **Markdown**: render-markdown.nvim
 - **TODO管理**: todo-comments.nvim
 
-### 主要キーマッピング
-
-#### 基本操作
-- `<Space>` - Leader key
-- `<leader>e` - Neo-tree toggle
-- `<leader><leader>` - ファイル検索
-- `<leader>/` - プロジェクト内検索
-- `<leader>w` - バッファを閉じる
-- `<leader>cp` - 相対パスをコピー
-
-#### Git関連
-- `<leader>gb` - Git blame
-- `<leader>gB` - GitHubで開く
-
-
-### その他の設定
-- **Starship**: カスタムプロンプト (`starship/`)
-- **WezTerm**: ターミナル設定（vimライクなコピーモード対応） (`wezterm/`)
-- **direnv**: 環境変数管理（重複読み込み防止対応）
-- **Git**: グローバルignore設定 (`git/`)
-- **Zsh**: エイリアス設定とシェル環境 (`zsh/`)
-
-### カスタムエイリアス
-
-#### ナビゲーション
-- `cdot` - dotfilesディレクトリへ移動
-- `cw` - workspaceへ移動
-- `root` - Gitリポジトリのルートへ移動
-
-#### nb関連（ノート管理）
-- `nad` - 今日のデイリーノート作成
-- `nat` - タスクノート作成
-- `naw <filename>` - workディレクトリに新規ファイル作成
-
-#### Git関連
-- `gst` - git status
-- `gd` - git diff
-- `ga` - git add
-- `gcm` - git commit -m
-- `gp` - git pull origin (現在のブランチ)
-- `gpu` - git push origin (現在のブランチ)
-- `gsw` - git switch
-- `gswc` - git switch -c (新規ブランチ作成)
-- `gswm` - git switch main
-
-
-## Skills Directory
-
-実行可能な操作手順を整理したドキュメント集（`.claude/skills/`）。具体的な作業を行う際の参照用。
+### Zsh (`zsh/`)
+モジュール式構成。`.zshrc` から各ファイルを source する形式。
 
 | ファイル | 内容 |
 |---------|------|
-| `coding-standards.md` | コーディング規約とベストプラクティス |
-| `debugging.md` | トラブルシューティング手順 |
-| `deployment.md` | セットアップとデプロイ手順 |
-| `git-operations.md` | Git操作とコミット規約 |
-| `language-environments.md` | 言語別開発環境設定 |
-| `lint-and-format.md` | コード検証とフォーマット |
-| `mcp-setup.md` | MCPサーバー設定（Atlassian, Kibela, Figma） |
-| `plugin-management.md` | Neovimプラグイン管理 |
-| `search-and-navigation.md` | 検索とファイルナビゲーション |
+| `aliases.zsh` | コマンドエイリアス |
+| `editor.zsh` | エディター設定 |
+| `environment.zsh` | 環境変数 |
+| `functions.zsh` | カスタム関数 |
+| `kube-ps1.zsh` | Kubernetesコンテキスト表示 |
+| `language-managers.zsh` | 言語バージョン管理 (mise等) |
+| `mcp.zsh` | MCPサーバー設定 |
+| `paths.zsh` | PATH設定 |
+| `shell-enhancements.zsh` | シェル補完・ハイライト等 |
 
-## Claude連携
+### その他
+- **Starship** (`starship/`): カスタムプロンプト（Kubernetes, Git, 言語バージョン表示）
+- **WezTerm** (`wezterm/`): ターミナル設定（vimライクなコピーモード対応）
+- **Git** (`git/`): グローバルignore設定
+- **mycli** (`mycli/`): MySQL CLI設定（prod/dev/local/base プロファイル）
 
-### プロジェクト設定
-- `CLAUDE.md` - このリポジトリ専用のClaude Code設定
+## ファイル構成
 
-### MCPサーバー統合
-Model Context Protocol (MCP) を使用した外部サービス連携:
-- Atlassian (JIRA)
-- Kibela (ドキュメント管理)
-- Figma (デザインツール)
-
-詳細は `.claude/skills/mcp-setup.md` を参照。
+```
+dotfiles/
+├── README.md
+├── CLAUDE.md          # Claude Code用プロジェクト設定
+├── deploy.sh          # セットアップスクリプト
+├── nvim/              # Neovim設定
+│   ├── init.lua
+│   └── lua/
+│       ├── config/    # 基本設定（keymaps, options, autocmds）
+│       └── plugins/   # プラグイン設定
+├── zsh/               # Zsh設定（モジュール式）
+├── wezterm/           # WezTerm設定
+├── starship/          # Starshipプロンプト設定
+├── git/               # Gitグローバルignore
+├── mycli/             # mycli設定（prod/dev/local）
+├── docs/              # 詳細ドキュメント
+└── .claude/           # Claude Code設定
+```
 
 ## トラブルシューティング
 
@@ -158,35 +128,7 @@ Model Context Protocol (MCP) を使用した外部サービス連携:
 :Mason  # LSP serverの管理
 ```
 
-詳細なトラブルシューティングは `.claude/skills/debugging.md` を参照。
-
-## ファイル構成
-
-```
-dotfiles/
-├── README.md          # このファイル
-├── CLAUDE.md          # Claude Code用プロジェクト設定
-├── deploy.sh          # デプロイスクリプト（~/.zshrc, ~/.config/* へリンク）
-├── nvim/              # Neovim設定
-│   ├── init.lua
-│   └── lua/
-│       ├── config/    # 基本設定（keymaps, options, autocmds）
-│       └── plugins/   # プラグイン設定（lsp, formatting, ui等）
-├── zsh/               # Zsh設定（モジュール式）
-│   ├── aliases.zsh    # カスタムエイリアス
-│   ├── editor.zsh     # エディター設定
-│   ├── environment.zsh # 環境変数
-│   ├── mcp.zsh        # MCPサーバー設定
-│   └── ...
-├── .claude/           # Claude Code設定
-│   └── skills/        # 実行可能な操作手順書
-├── docs/              # 詳細ドキュメント
-│   └── lsp-troubleshooting.md
-├── mycli/             # CLIツール
-├── starship/          # Starshipプロンプト設定
-├── wezterm/           # WezTerm設定
-└── git/               # Git設定（global ignore）
-```
+詳細は `docs/lsp-troubleshooting.md` を参照。
 
 ## 更新
 
