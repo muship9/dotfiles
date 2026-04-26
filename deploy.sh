@@ -13,6 +13,10 @@ if command -v brew &> /dev/null; then
   echo "Installing zsh plugins..."
   brew install zsh-autosuggestions zsh-syntax-highlighting
   echo "✓ Zsh plugins installed"
+
+  echo "Installing CLI tools (ghq, fzf, bat)..."
+  brew install ghq fzf bat
+  echo "✓ CLI tools installed"
 else
   echo "⚠ Homebrew not found. Please install Homebrew first."
   echo "  Visit: https://brew.sh"

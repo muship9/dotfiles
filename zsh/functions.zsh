@@ -73,6 +73,23 @@ function es() {
   done
 }
 
+# ghq管理のリポジトリをfzfで選んで移動 (Ctrl+G)
+if command -v ghq &> /dev/null && command -v fzf &> /dev/null; then
+  function ghq-fzf() {
+    local root
+    root=$(ghq root)
+    local src
+    src=$(ghq list | fzf --preview "bat --color=always --style=header,grid --line-range :80 ${root}/{}/README.* 2>/dev/null")
+    if [[ -n "$src" ]]; then
+      BUFFER="cd ${root}/${src}"
+      zle accept-line
+    fi
+    zle -R -c
+  }
+  zle -N ghq-fzf
+  bindkey '^g' ghq-fzf
+fi
+
 # 前回のコマンドを再実行してクリップボードにコピー (出力は画面にも表示)
 # WezTerm の Cmd+Shift+O で再実行なしにコピーする場合は Shell Integration が必要
 function cco() {
