@@ -176,6 +176,7 @@ sql.whitespace = ''
 # Initial commands to execute when connecting to any database.
 [init-commands]
 # read_only = "SET SESSION TRANSACTION READ ONLY"
+timeouts = "SET SESSION wait_timeout=3600; SET SESSION interactive_timeout=3600"
 
 
 # Use the -d option to reference a DSN.
