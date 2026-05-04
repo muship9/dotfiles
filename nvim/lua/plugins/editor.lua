@@ -23,8 +23,8 @@ return {
             hide_gitignored = false,
           },
           follow_current_file = {
-            enabled = true,         -- This will find and focus the file in the active buffer every time
-            leave_dirs_open = true, -- `false` closes auto expanded dirs when navigating
+            enabled = true,
+            leave_dirs_open = true,
           },
           -- File watchers can be heavy in very large repos; disable for performance
           use_libuv_file_watcher = false,

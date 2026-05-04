@@ -84,10 +84,20 @@ return {
 					map("n", "<leader>gS", gs.stage_buffer, { desc = "Stage buffer" })
 					map("n", "<leader>gu", gs.undo_stage_hunk, { desc = "Undo stage hunk" })
 					map("n", "<leader>gR", gs.reset_buffer, { desc = "Reset buffer" })
-					map("n", "<leader>gd", gs.diffthis, { desc = "Diff this" })
+					map("n", "<leader>gd", function()
+						if vim.wo.diff then
+							vim.cmd("diffoff! | only")
+						else
+							gs.diffthis()
+						end
+					end, { desc = "Diff this (toggle)" })
 					map("n", "<leader>gD", function()
-						gs.diffthis("~")
-					end, { desc = "Diff this ~" })
+						if vim.wo.diff then
+							vim.cmd("diffoff! | only")
+						else
+							gs.diffthis("~")
+						end
+					end, { desc = "Diff this ~ (toggle)" })
 
 					-- Text object
 					map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "Select hunk" })
@@ -150,17 +160,66 @@ return {
 	{
 		"greggh/claude-code.nvim",
 		cmd = "ClaudeCode",
+		keys = {
+			{ "<leader>cc", "<cmd>ClaudeCode<cr>", desc = "Claude Code を開く/閉じる" },
+			{
+				"<leader>rq",
+				function()
+					-- 選択範囲を取得
+					local start_line = vim.fn.line("'<")
+					local end_line = vim.fn.line("'>")
+					local lines = vim.fn.getline(start_line, end_line)
+					local selected = table.concat(lines, "\n")
+
+					-- Octo バッファから PR 情報を取得
+					local bufname = vim.api.nvim_buf_get_name(0)
+					local owner, repo, pr_num = bufname:match("octo://([^/]+)/([^/]+)/pull/(%d+)")
+
+					local context_parts = {}
+
+					if owner and repo and pr_num then
+						local pr_json = vim.fn.system(string.format(
+							"gh pr view %s --repo %s/%s --json number,title,body,files 2>/dev/null",
+							pr_num, owner, repo
+						))
+						local ok, pr = pcall(vim.fn.json_decode, pr_json)
+						if ok and pr then
+							table.insert(context_parts, string.format("## PR #%s: %s", pr.number, pr.title))
+							if pr.body and pr.body ~= "" then
+								table.insert(context_parts, string.format("### 説明\n%s", pr.body))
+							end
+							if pr.files and #pr.files > 0 then
+								local file_names = {}
+								for _, f in ipairs(pr.files) do
+									table.insert(file_names, string.format("- %s", f.path))
+								end
+								table.insert(context_parts, "### 変更ファイル\n" .. table.concat(file_names, "\n"))
+							end
+						end
+					end
+
+					table.insert(context_parts, string.format("### 質問コード\n```\n%s\n```", selected))
+					table.insert(context_parts, "### 質問\n")
+
+					vim.fn.setreg("+", table.concat(context_parts, "\n\n"))
+					vim.cmd("ClaudeCode")
+					vim.notify("Ctrl+R+ でコンテキストをペーストしてください", vim.log.levels.INFO)
+				end,
+				mode = "v",
+				desc = "選択コードと PR コンテキストをクリップボードにコピーして Claude に質問",
+			},
+		},
 		config = function()
 			require("claude-code").setup({
 				window = {
 					position = "float",
 					float = {
-						width = "90%", -- Take up 90% of the editor width
-						height = "90%", -- Take up 90% of the editor height
-						row = "center", -- Center vertically
-						col = "center", -- Center horizontally
+						width = "90%",
+						height = "90%",
+						row = "center",
+						col = "center",
 						relative = "editor",
-						border = "double", -- Use double border style
+						border = "double",
 					},
 				},
 			})
