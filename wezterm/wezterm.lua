@@ -139,7 +139,6 @@ return {
   use_fancy_tab_bar = true,               -- fancy tab barを使用してformat-tab-titleを有効化
   hide_tab_bar_if_only_one_tab = true,    -- タブが一つの時は非表示
   show_new_tab_button_in_tab_bar = false, -- タブの追加ボタンを非表示
-  show_close_tab_button_in_tabs = false,  -- タブの閉じるボタンを非表示
 
   -- タブバーの設定
   window_frame = {
@@ -160,6 +159,10 @@ return {
   tab_max_width = 24,
 
   automatically_reload_config = true,
+
+  -- Claude Code の応答通知: WezTerm ウィンドウが OS フォーカス中のみ OSC 9 トーストを抑制
+  -- （ブラウザ等に切り替えている時は通知が飛ぶ）
+  notification_handling = "SuppressFromFocusedWindow",
 
   -- key bindings
   keys = {
@@ -363,6 +366,20 @@ return {
 
   -- スクロールバックバッファのサイズ
   scrollback_lines = 10000,
+
+  -- QuickSelect の追加パターン（既定の URL/path/hash 等に追記される）
+  quick_select_patterns = {
+    "[A-Za-z0-9]+(?:_[A-Za-z0-9]+)+",     -- snake_case / SCREAMING_SNAKE
+    "[A-Za-z0-9]+(?:-[A-Za-z0-9]+)+",     -- kebab-case
+    "[A-Za-z][a-z0-9]*[A-Z][A-Za-z0-9]*", -- camelCase / PascalCase
+    '"([^"]+)"',                          -- ダブルクォート内
+    "'([^']+)'",                          -- シングルクォート内
+    "`([^`]+)`",                          -- バッククォート内
+    "https?://\\S+",                      -- http/https URL（クエリ・フラグメント含む）
+    "ftp://\\S+",                         -- ftp URL
+    "file://\\S+",                        -- file URL
+    "www\\.[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(?:/\\S*)?", -- スキーム無しURL (www.example.com/...)
+  },
 
   -- Copy modeのキーバインド (vimライク)
   key_tables = {
