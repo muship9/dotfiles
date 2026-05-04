@@ -71,6 +71,9 @@ alias tfsl='terraform state list'
 alias c='claude'
 alias cr='claude --resume'
 
+# k9s - AWS credentials を環境変数から除外して起動
+alias k9s='env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN k9s'
+
 y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	command yazi "$@" --cwd-file="$tmp"
