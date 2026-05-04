@@ -6,6 +6,8 @@ $git_branch\
 $git_status\
 [](fg:#394260)\
 $fill\
+${custom.app_env_local}${custom.app_env_stg}${custom.app_env_prod}\
+${custom.aws}\
 $kubernetes\
 $time\
 \n$character"""
@@ -76,4 +78,53 @@ symbol = " "
 disabled = false
 time_format = "%R" # Hour:Minute Format
 style = "bg:#1d2230"
-format = '[[  $time ](fg:#a0a9cb bg:#1d2230)]($style)'
+format = '[[   $time ](fg:#a0a9cb bg:#1d2230)]($style)'
+
+[custom.app_env_local]
+command = 'echo $APP_ENV'
+when = 'test "$APP_ENV" = "local"'
+style = "fg:#9ece6a bg:#1d2230"
+format = '[](fg:#1d2230)[ $output ]($style)[](fg:#1d2230)'
+
+[custom.app_env_stg]
+command = 'echo $APP_ENV'
+when = 'test "$APP_ENV" = "stg"'
+style = "fg:#ae8b2d bg:#1d2230"
+format = '[](fg:#1d2230)[ $output ]($style)[](fg:#1d2230)'
+
+[custom.app_env_prod]
+command = 'echo $APP_ENV'
+when = 'test "$APP_ENV" = "prod"'
+style = "fg:#cc3333 bg:#1d2230"
+format = '[](fg:#1d2230)[ $output ]($style)[](fg:#1d2230)'
+
+[custom.aws]
+command = '''
+p="${AWS_PROFILE:-$AWS_DEFAULT_PROFILE}"
+r=$(awk -v p="[profile $p]" '
+  /^\[/ { f = ($0 == p); next }
+  f && /^[[:space:]]*role_arn[[:space:]]*=/ && role=="" { v=$0; sub(/.*role\//, "", v); gsub(/[[:space:]]/, "", v); role=v }
+  f && /^[[:space:]]*sso_role_name[[:space:]]*=/ && sso=="" { v=$0; sub(/.*=[[:space:]]*/, "", v); gsub(/[[:space:]]/, "", v); sso=v }
+  f && /^[[:space:]]*login_session[[:space:]]*=/ && login=="" { v=$0; sub(/.*\//, "", v); gsub(/[[:space:]]/, "", v); login=v }
+  END { if (role) print role; else if (sso) print sso; else if (login) print login }
+' ~/.aws/config 2>/dev/null)
+sess=""
+exp=$(jq -r '.accessToken.expiresAt // empty' ~/.aws/login/cache/*.json 2>/dev/null | head -n1)
+if [ -n "$exp" ]; then
+  exp_epoch=$(date -j -u -f "%Y-%m-%dT%H:%M:%SZ" "$exp" "+%s" 2>/dev/null)
+  now=$(date -u "+%s")
+  if [ -n "$exp_epoch" ]; then
+    diff=$((exp_epoch - now))
+    if [ "$diff" -gt 0 ]; then
+      h=$((diff / 3600)); m=$(((diff % 3600) / 60))
+      if [ "$h" -gt 0 ]; then sess="${h}h${m}m"; else sess="${m}m"; fi
+    else
+      sess="expired"
+    fi
+  fi
+fi
+printf "%s%s%s" "$p" "${r:+ / $r}" "${sess:+ ($sess)}"
+'''
+when = 'test -n "$AWS_PROFILE" -o -n "$AWS_DEFAULT_PROFILE"'
+style = "fg:#ffffff bg:#1d2230"
+format = '[](fg:#1d2230)[   $output ]($style)[](fg:#1d2230)'
