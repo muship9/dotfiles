@@ -4,8 +4,9 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "nvim-tree/nvim-web-devicons",
   },
-  ft = { "markdown" },
+  ft = { "markdown", "octo" },
   opts = {
+    file_types = { "markdown", "octo" },
     heading = {
       sign = false,
       icons = { "# ", "## ", "### ", "#### ", "##### ", "###### " },

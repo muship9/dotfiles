@@ -96,6 +96,62 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+-- octo:// 上では gopls などが file:// 以外の URI を拒否するため
+-- gd/gr/gi/gy を「実ファイルに切り替えてから LSP を叩く」形にすり替える
+local function octo_lsp_jump(action)
+  return function()
+    local _, col = unpack(vim.api.nvim_win_get_cursor(0))
+    local ok, nav = pcall(require, "octo.navigation")
+    if not ok then
+      vim.notify("octo.navigation がロードされていません", vim.log.levels.WARN)
+      return
+    end
+
+    nav.go_to_file()
+
+    local new_buf = vim.api.nvim_get_current_buf()
+    if vim.api.nvim_buf_get_name(new_buf):match("^octo://") then
+      -- パス解決失敗（octo 側でエラー通知済み）
+      return
+    end
+
+    local row = vim.api.nvim_win_get_cursor(0)[1]
+    pcall(vim.api.nvim_win_set_cursor, 0, { row, col })
+
+    -- LSP のアタッチ/同期を少し待ってから実行
+    vim.defer_fn(function()
+      if not vim.api.nvim_buf_is_valid(new_buf) then return end
+      if #vim.lsp.get_clients({ bufnr = new_buf }) == 0 then
+        vim.notify("LSP が未アタッチです", vim.log.levels.WARN)
+        return
+      end
+      vim.cmd(action)
+    end, 200)
+  end
+end
+
+vim.api.nvim_create_autocmd({ "BufWinEnter", "BufReadPost" }, {
+  group = augroup("octo_lsp_jump"),
+  callback = function(ev)
+    local name = vim.api.nvim_buf_get_name(ev.buf)
+    if not name:match("^octo://.+/file/") then return end
+
+    local opts = { buffer = ev.buf, silent = true, noremap = true }
+    vim.keymap.set("n", "gd",
+      octo_lsp_jump("FzfLua lsp_definitions jump1=true ignore_current_line=true"),
+      vim.tbl_extend("force", opts, { desc = "Octo: 実ファイルで定義へジャンプ" }))
+    vim.keymap.set("n", "gr",
+      octo_lsp_jump("FzfLua lsp_references jump1=true ignore_current_line=true"),
+      vim.tbl_extend("force", opts, { desc = "Octo: 実ファイルで参照へジャンプ" }))
+    vim.keymap.set("n", "gi",
+      octo_lsp_jump("FzfLua lsp_implementations jump1=true ignore_current_line=true"),
+      vim.tbl_extend("force", opts, { desc = "Octo: 実ファイルで実装へジャンプ" }))
+    vim.keymap.set("n", "gy",
+      octo_lsp_jump("FzfLua lsp_typedefs jump1=true ignore_current_line=true"),
+      vim.tbl_extend("force", opts, { desc = "Octo: 実ファイルで型定義へジャンプ" }))
+  end,
+})
+
 -- Auto create dir when saving a file, in case some intermediate directory does not exist
 vim.api.nvim_create_autocmd({ "BufWritePre" }, {
   group = augroup("auto_create_dir"),
