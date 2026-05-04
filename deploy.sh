@@ -53,9 +53,13 @@ link "$DOTFILES_DIR/git/ignore" "$HOME/.config/git/ignore"
 # gh-dash
 link "$DOTFILES_DIR/gh-dash/config.yml" "$HOME/.config/gh-dash/config.yml"
 
-# gh-notify-poll (launchd)
-link "$DOTFILES_DIR/gh-notify-poll/com.shinpeimukaiyama.gh-notify-poll.plist" "$HOME/Library/LaunchAgents/com.shinpeimukaiyama.gh-notify-poll.plist"
-link "$DOTFILES_DIR/gh-notify-poll/com.shinpeimukaiyama.gh-notify-poll-digest.plist" "$HOME/Library/LaunchAgents/com.shinpeimukaiyama.gh-notify-poll-digest.plist"
+# gh-notify-poll (launchd) - generate with path substitution
+sed "s|__DOTFILES_DIR__|$DOTFILES_DIR|g; s|__HOME__|$HOME|g" \
+    "$DOTFILES_DIR/gh-notify-poll/com.shinpeimukaiyama.gh-notify-poll.plist" \
+    > "$HOME/Library/LaunchAgents/com.shinpeimukaiyama.gh-notify-poll.plist"
+sed "s|__DOTFILES_DIR__|$DOTFILES_DIR|g; s|__HOME__|$HOME|g" \
+    "$DOTFILES_DIR/gh-notify-poll/com.shinpeimukaiyama.gh-notify-poll-digest.plist" \
+    > "$HOME/Library/LaunchAgents/com.shinpeimukaiyama.gh-notify-poll-digest.plist"
 
 echo "Gitのグローバルignoreを設定するには、次を実行してください:"
 echo "  git config --global core.excludesFile \"$HOME/.config/git/ignore\""

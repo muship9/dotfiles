@@ -7,7 +7,7 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/shinpeimukaiyama/dotfiles/gh-notify-poll/poll.sh</string>
+        <string>__DOTFILES_DIR__/gh-notify-poll/poll.sh</string>
         <string>digest</string>
     </array>
     <key>StartCalendarInterval</key>
@@ -31,6 +31,6 @@
         <string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
     <key>StandardErrorPath</key>
-    <string>/Users/shinpeimukaiyama/.cache/gh-notify-poll/stderr-digest.log</string>
+    <string>__HOME__/.cache/gh-notify-poll/stderr-digest.log</string>
 </dict>
 </plist>
