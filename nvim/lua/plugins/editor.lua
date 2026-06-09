@@ -277,6 +277,83 @@ return {
     end,
   },
 
+  -- List and jump/open URLs in buffer (with markdown link text)
+  {
+    "nvim-telescope/telescope.nvim",
+    keys = {
+      {
+        "<leader>u",
+        function()
+          local bufnr = vim.api.nvim_get_current_buf()
+          local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+          local results = {}
+          local seen = {}
+
+          for lnum, line in ipairs(lines) do
+            -- [text](url) 形式
+            for text, url in line:gmatch("%[(.-)%]%((%S-)%)") do
+              if url:match("^https?://") and not seen[url] then
+                seen[url] = true
+                table.insert(results, { display = text .. "  " .. url, url = url, lnum = lnum })
+              end
+            end
+            -- 裸の URL
+            for url in line:gmatch("https?://[%S]+") do
+              url = url:gsub("[%)%]%.]+$", "")
+              if not seen[url] then
+                seen[url] = true
+                table.insert(results, { display = url, url = url, lnum = lnum })
+              end
+            end
+          end
+
+          local pickers = require("telescope.pickers")
+          local finders = require("telescope.finders")
+          local conf = require("telescope.config").values
+          local actions = require("telescope.actions")
+          local action_state = require("telescope.actions.state")
+
+          pickers.new({}, {
+            prompt_title = "URLs",
+            finder = finders.new_table({
+              results = results,
+              entry_maker = function(entry)
+                return { value = entry, display = entry.display, ordinal = entry.display }
+              end,
+            }),
+            sorter = conf.generic_sorter({}),
+            attach_mappings = function(prompt_bufnr, map)
+              -- Enter: 該当行にジャンプ
+              actions.select_default:replace(function()
+                actions.close(prompt_bufnr)
+                local sel = action_state.get_selected_entry()
+                vim.api.nvim_win_set_cursor(0, { sel.value.lnum, 0 })
+              end)
+              -- <C-o>: ブラウザで開く
+              local open = function()
+                local sel = action_state.get_selected_entry()
+                local cmd = vim.fn.has("mac") == 1 and "open" or "xdg-open"
+                vim.fn.jobstart({ cmd, sel.value.url }, { detach = true })
+              end
+              map("i", "<C-o>", open)
+              map("n", "<C-o>", open)
+              return true
+            end,
+          }):find()
+        end,
+        desc = "List URLs in buffer",
+      },
+    },
+  },
+
+  -- Open URL in browser
+  {
+    "tyru/open-browser.vim",
+    keys = {
+      { "gx", "<Plug>(openbrowser-smart-search)", mode = { "n", "v" }, desc = "Open URL in browser" },
+    },
+  },
+
   -- Terminal
   {
     "akinsho/toggleterm.nvim",
