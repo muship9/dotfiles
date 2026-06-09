@@ -72,7 +72,12 @@
       "Bash(starship config *)",
       "Bash(xxd)",
       "Bash(starship module *)",
-      "Bash(aws configure *)"
+      "Bash(aws configure *)",
+      "Bash(gh api *)",
+      "Bash(curl -sI https://docs.snowflake.com/sitemap.xml)",
+      "Bash(curl -sI https://docs.snowflake.com/ja/sitemap.xml)",
+      "Bash(curl -s https://docs.snowflake.com/ja/sitemap.xml)",
+      "Bash(awk -F'/' '{print $5}')"
     ],
     "deny": []
   },
