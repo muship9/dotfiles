@@ -1,5 +1,6 @@
 local wezterm = require("wezterm")
 local workspaces = require("workspace")
+local agent = require("agent")
 
 wezterm.on("gui-startup", function(cmd)
   local first = workspaces[1]
@@ -34,7 +35,9 @@ local SOLID_RIGHT_ARROW = wezterm.nerdfonts.ple_upper_left_triangle
 
 -- タブタイトルを現在のディレクトリ名に設定し、形をカスタマイズする関数
 wezterm.on("update-right-status", function(window, pane)
-  window:set_right_status("")
+  -- Claude Code セッションの running/idle を右ステータスに表示し、
+  -- running→idle 遷移でデスクトップ通知を出す
+  window:set_right_status(agent.render(window))
 end)
 
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
@@ -294,6 +297,14 @@ return {
       key = "9",
       mods = "CMD",
       action = wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }),
+    },
+    -- Claude Code エージェントの状態一覧を toast 表示
+    {
+      key = "a",
+      mods = "CMD|SHIFT",
+      action = wezterm.action_callback(function(window, _pane)
+        agent.show_summary(window)
+      end),
     },
     -- 前コマンドの出力をコピー (Shell Integration + OSC 133 が必要)
     {
