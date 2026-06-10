@@ -77,9 +77,6 @@ alias ghd='(cd ~ && gh dash)'
 # k9s - AWS credentials を環境変数から除外して起動
 alias k9s='env -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN k9s'
 
-# Airbyte (prod) の server へ port-forward
-alias abpf='kubectl --context=handy-eks-prod -n airbyte port-forward svc/airbyte-airbyte-server-svc 8001:8001'
-
 y() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
 	command yazi "$@" --cwd-file="$tmp"
