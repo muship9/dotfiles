@@ -298,6 +298,14 @@ return {
       mods = "CMD",
       action = wezterm.action.ShowLauncherArgs({ flags = "FUZZY|WORKSPACES" }),
     },
+    -- Claude Code エージェントスイッチャー (blocked→working→idle 順に一覧、選んでジャンプ)
+    {
+      key = "0",
+      mods = "CMD",
+      action = wezterm.action_callback(function(window, pane)
+        agent.switcher(window, pane)
+      end),
+    },
     -- Claude Code エージェントの状態一覧を toast 表示
     {
       key = "a",

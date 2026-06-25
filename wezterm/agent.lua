@@ -1,95 +1,53 @@
--- agent.lua — Claude Code セッションの running/idle を監視する外付けモジュール
+-- agent.lua — Claude Code セッションの状態を WezTerm 右ステータスに表示する。
 --
--- 思想: WezTerm 本体はフォークしない。素の WezTerm + Lua で「盗み見」する。
---   検出ロジック:
---     1. 各ペインのフォアグラウンドプロセスが `claude` かどうかを ps で判定
---     2. その claude が `caffeinate` 子プロセスを spawn しているか → running / idle
---        (Claude Code はタスク実行中、スリープ抑止のため caffeinate を起動する副作用がある)
+-- 思想: WezTerm 本体はフォークしない。Claude Code のフックが OSC 1337 SetUserVar で
+--   各ペインに push する CLAUDE_STATUS を pane:get_user_vars() で読むだけ。
+--   (push 側: ~/.claude/notify-wezterm.sh + ~/.claude/settings.json の hooks)
 --
--- 注意: これは Claude Code の「実装詳細(副作用)」に乗っかっている。
---       Claude 側が caffeinate をやめたら検出は壊れる。規約(OSC等)ではなく観測ベース。
+--   CLAUDE_STATUS の値 -> 表示状態:
+--     "working" -> working  処理中      (UserPromptSubmit / PostToolUse)
+--     "pending" -> blocked  入力待ち    (Notification)
+--     "done"    -> idle     応答完了    (Stop)
+--     ""/未設定 -> エージェント無し       (SessionEnd で clear)
+--
+-- 旧実装は `claude` プロセスと `caffeinate` 副作用を ps で観測していたが、
+-- フック (公式 API) ベースに置き換え、running/idle の2値から
+-- blocked/working/idle の3値へ格上げした。デスクトップ通知は
+-- notify-wezterm.sh 側の OSC9 が担うため、ここでは通知を出さない。
 
 local wezterm = require("wezterm")
 
 local M = {}
 
--- ps の結果を 3 秒キャッシュ (GUI スレッドで毎フレーム ps を叩かないため)
-local TTL = 3
-local cache = { t = 0, procs = nil }
-
--- pid -> "running"/"idle" の前回状態。running→idle 遷移の検出に使う
-local prev_state = {}
-
-local function basename(path)
-  return path:match("([^/]+)$") or path
-end
-
--- ps を 1 回だけ走らせて、プロセス表を作る (TTL キャッシュ付き)
---   返り値: { by_pid = { [pid] = { ppid, is_claude } }, caffeinate_parents = { [ppid]=true } }
-local function read_procs()
-  local t = os.time()
-  if cache.procs and (t - cache.t) < TTL then
-    return cache.procs
-  end
-
-  local procs = { by_pid = {}, caffeinate_parents = {} }
-  local ok, stdout = wezterm.run_child_process({ "ps", "-axo", "pid=,ppid=,command=" })
-  if ok and stdout then
-    for line in stdout:gmatch("[^\n]+") do
-      local pid, ppid, command = line:match("^%s*(%d+)%s+(%d+)%s+(.+)$")
-      if pid then
-        pid = tonumber(pid)
-        ppid = tonumber(ppid)
-        local first_tok = command:match("^(%S+)") or command
-        local is_claude = (basename(first_tok) == "claude")
-        procs.by_pid[pid] = { ppid = ppid, is_claude = is_claude }
-        if command:find("caffeinate", 1, true) then
-          procs.caffeinate_parents[ppid] = true
-        end
-      end
-    end
-  end
-
-  cache.t = t
-  cache.procs = procs
-  return procs
-end
-
--- 与えられた pid から祖先方向に claude プロセスを探す (ペインの fg が claude の子の場合に備える)
-local function find_claude_ancestor(procs, pid)
-  local cur = pid
-  local guard = 0
-  while cur and procs.by_pid[cur] and guard < 20 do
-    if procs.by_pid[cur].is_claude then
-      return cur
-    end
-    cur = procs.by_pid[cur].ppid
-    guard = guard + 1
-  end
+-- CLAUDE_STATUS の生値 -> 正規化した状態名
+local function normalize(raw)
+  if raw == "working" then return "working" end
+  if raw == "pending" then return "blocked" end
+  if raw == "done" then return "idle" end
   return nil
 end
 
--- 全 mux ペインを走査して、agent ペインの一覧を返す
---   { { pane_id, workspace, pid, running }, ... }
+-- 全 mux ペインを走査して、CLAUDE_STATUS を持つペインの一覧を返す。
+--   { { pane_id, workspace, state, title }, ... }
 function M.scan()
-  local procs = read_procs()
   local agents = {}
 
   for _, win in ipairs(wezterm.mux.all_windows()) do
     local ws = win:get_workspace()
     for _, tab in ipairs(win:tabs()) do
       for _, pane in ipairs(tab:panes()) do
-        local got, info = pcall(function()
-          return pane:get_foreground_process_info()
+        local ok, vars = pcall(function()
+          return pane:get_user_vars()
         end)
-        if got and info and info.pid then
-          local cpid = find_claude_ancestor(procs, info.pid)
-          if cpid then
+        if ok and vars then
+          local state = normalize(vars.CLAUDE_STATUS)
+          if state then
+            local got_title, title = pcall(function() return pane:get_title() end)
             agents[#agents + 1] = {
               pane_id = pane:pane_id(),
               workspace = ws,
-              pid = cpid,
-              running = procs.caffeinate_parents[cpid] == true,
+              state = state,
+              title = (got_title and title) or "",
             }
           end
         end
@@ -100,55 +58,44 @@ function M.scan()
   return agents
 end
 
--- running→idle 遷移を検出してデスクトップ通知を出す。
--- update-right-status は window ごとに呼ばれるが、prev_state を即更新するので
--- 同一スキャンサイクルでの二重通知は起きない。
-local function detect_transitions(window, agents)
-  local seen = {}
-  for _, a in ipairs(agents) do
-    seen[a.pid] = true
-    local cur = a.running and "running" or "idle"
-    local was = prev_state[a.pid]
-    if was == "running" and cur == "idle" then
-      window:toast_notification(
-        "Claude Code",
-        "🟢→💤 [" .. a.workspace .. "] のエージェントが手空きになりました",
-        nil,
-        4000
-      )
-    end
-    prev_state[a.pid] = cur
-  end
-  -- 死んだ claude pid を掃除 (メモリリーク防止)
-  for pid in pairs(prev_state) do
-    if not seen[pid] then
-      prev_state[pid] = nil
-    end
+-- workspace 名を重複なく順序維持で集める小道具
+local function push_unique(list, seen, name)
+  if not seen[name] then
+    seen[name] = true
+    list[#list + 1] = name
   end
 end
 
--- right-status 用の整形済みテキストを返す。副作用で通知も発火する。
-function M.render(window)
+-- right-status 用の整形済みテキストを返す。
+-- 例: " ⏳ voc  🟢 biz-voc infra  💤 2 "
+function M.render(_window)
   local agents = M.scan()
-  detect_transitions(window, agents)
-
   if #agents == 0 then
     return ""
   end
 
-  local running, idle = {}, 0
+  local blocked, working = {}, {}
+  local blocked_seen, working_seen = {}, {}
+  local idle = 0
   for _, a in ipairs(agents) do
-    if a.running then
-      running[#running + 1] = a.workspace
+    if a.state == "blocked" then
+      push_unique(blocked, blocked_seen, a.workspace)
+    elseif a.state == "working" then
+      push_unique(working, working_seen, a.workspace)
     else
       idle = idle + 1
     end
   end
 
   local elems = {}
-  if #running > 0 then
+  -- blocked (要対応) を先頭に。黄色で目立たせる。
+  if #blocked > 0 then
+    table.insert(elems, { Foreground = { Color = "#e0c888" } })
+    table.insert(elems, { Text = "⏳ " .. table.concat(blocked, " ") .. "  " })
+  end
+  if #working > 0 then
     table.insert(elems, { Foreground = { Color = "#90c8a0" } }) -- green
-    table.insert(elems, { Text = "🟢 " .. table.concat(running, " ") .. "  " })
+    table.insert(elems, { Text = "🟢 " .. table.concat(working, " ") .. "  " })
   end
   if idle > 0 then
     table.insert(elems, { Foreground = { Color = "#6b7280" } }) -- dim
@@ -158,6 +105,69 @@ function M.render(window)
   return wezterm.format(elems)
 end
 
+-- pane_id から mux の window/tab/pane を引く
+local function find_pane(pane_id)
+  for _, win in ipairs(wezterm.mux.all_windows()) do
+    for _, tab in ipairs(win:tabs()) do
+      for _, p in ipairs(tab:panes()) do
+        if p:pane_id() == pane_id then
+          return win, tab, p
+        end
+      end
+    end
+  end
+  return nil
+end
+
+local STATE_ORDER = { blocked = 1, working = 2, idle = 3 }
+local STATE_MARK = { blocked = "⏳", working = "🟢", idle = "💤" }
+
+-- 全エージェントを一覧 (blocked→working→idle 順) し、選んだペインへジャンプする。
+-- herdr のサイドバー相当を InputSelector で軽量に再現したもの。
+function M.switcher(window, pane)
+  local agents = M.scan()
+  if #agents == 0 then
+    window:toast_notification("Claude Code", "稼働中のエージェントはありません", nil, 3000)
+    return
+  end
+
+  table.sort(agents, function(a, b)
+    local oa, ob = STATE_ORDER[a.state] or 9, STATE_ORDER[b.state] or 9
+    if oa ~= ob then return oa < ob end
+    return a.workspace < b.workspace
+  end)
+
+  local choices = {}
+  for _, a in ipairs(agents) do
+    local label = a.title ~= "" and a.title or ("pane " .. a.pane_id)
+    choices[#choices + 1] = {
+      id = tostring(a.pane_id),
+      label = (STATE_MARK[a.state] or "") .. " [" .. a.workspace .. "] " .. label,
+    }
+  end
+
+  window:perform_action(
+    wezterm.action.InputSelector({
+      title = "Claude agents",
+      fuzzy = true,
+      choices = choices,
+      action = wezterm.action_callback(function(win, p, id, _label)
+        if not id then return end -- キャンセル
+        local mwin, mtab, mpane = find_pane(tonumber(id))
+        if not mpane then
+          win:toast_notification("Claude Code", "ペインが見つかりません", nil, 3000)
+          return
+        end
+        -- そのペインのある workspace に切替えてから tab/pane をアクティブ化
+        win:perform_action(wezterm.action.SwitchToWorkspace({ name = mwin:get_workspace() }), p)
+        mtab:activate()
+        mpane:activate()
+      end),
+    }),
+    pane
+  )
+end
+
 -- 全エージェントの状態を toast で一覧表示する (キーバインドから呼ぶ用)
 function M.show_summary(window)
   local agents = M.scan()
@@ -165,10 +175,11 @@ function M.show_summary(window)
     window:toast_notification("Claude Code", "稼働中のエージェントはありません", nil, 3000)
     return
   end
+  local mark = { blocked = "⏳ blocked", working = "🟢 working", idle = "💤 idle" }
   local lines = {}
   for _, a in ipairs(agents) do
-    local mark = a.running and "🟢 running" or "💤 idle"
-    lines[#lines + 1] = mark .. "  [" .. a.workspace .. "]  pid=" .. a.pid
+    local label = a.title ~= "" and a.title or ("pane " .. a.pane_id)
+    lines[#lines + 1] = (mark[a.state] or a.state) .. "  [" .. a.workspace .. "]  " .. label
   end
   window:toast_notification("Claude Code agents", table.concat(lines, "\n"), nil, 5000)
 end
