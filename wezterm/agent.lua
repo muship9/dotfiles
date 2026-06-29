@@ -119,7 +119,7 @@ local function find_pane(pane_id)
   return nil
 end
 
-local STATE_ORDER = { blocked = 1, working = 2, idle = 3 }
+local STATE_ORDER = { working = 1, blocked = 2, idle = 3 }
 local STATE_MARK = { blocked = "⏳", working = "🟢", idle = "💤" }
 
 -- 全エージェントを一覧 (blocked→working→idle 順) し、選んだペインへジャンプする。
